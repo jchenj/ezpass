@@ -1,4 +1,5 @@
 """
+Pseudocode:
 Define the function password_manager that takes one argument, account_name
     # Validate arguments
     If account_name not in Account col of spreadsheet,
@@ -10,3 +11,24 @@ Define the function password_manager that takes one argument, account_name
     Copy contents of cell [row with account_name][password column] to paste buffer
     Print message "Password for account_name in print_buffer"
 """
+import csv
+import os
+import pyperclip
+
+
+def password_manager(account):
+    datafile = 'test-spreadsheet.csv'
+    account_header = 'Account-name'
+    password_header = 'Password'
+
+    # Read in data from spreadsheet
+    with open(datafile, encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            print(row[account_header], row[password_header])
+
+
+password_manager('account')
+
+
+
