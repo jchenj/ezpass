@@ -2,7 +2,7 @@
 
 Command-line password manager written in Python
 
-Features:
+##Features:
 
-**Version 1**
+###Version 1
 * Copies password of specfied account from file to paste buffer
