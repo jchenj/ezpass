@@ -21,14 +21,17 @@ def password_manager(account):
     account_header = 'Account-name'
     password_header = 'Password'
 
+    # TODO: add argument validation
     # Read in data from spreadsheet
     with open(datafile, encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            print(row[account_header], row[password_header])
+            for k, v in row.items():
+                # TODO: use strip() to take away any extra spaces from keys and values
+                if k == account_header and v == account:
+                    pyperclip.copy(row[password_header])
+                    print("Password for account '{}' in paste buffer".format(account))
+                    print(row[password_header])
 
 
-password_manager('account')
-
-
-
+password_manager('dog')
