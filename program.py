@@ -11,8 +11,7 @@ def password_manager(account):
 
     # TODO: add argument validation
     # TODO: If account_name not in acct col of spreadsheet, throw error with message "account_name not in spreadsheet"
-    # TODO: If cell [row with account_name][password column] is empty, throw error with message
-    # "no password entered for account_name"
+    # TODO: If cell [row with account_name][password col] is empty, show error "no password entered for account_name"
 
     with open(datafile, encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
