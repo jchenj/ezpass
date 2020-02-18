@@ -17,7 +17,6 @@ def password_manager(account):
         reader = csv.DictReader(csvfile)
         for row in reader:
             for k, v in row.items():
-
                 if k == account_header and v.strip() == account:  # Assumes headers are free of extra spaces
                     password = row[password_header].strip()
                     pyperclip.copy(password)
