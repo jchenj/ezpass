@@ -8,7 +8,8 @@ import os
 import pyperclip
 import argparse
 
-def password_manager(account):
+
+def get_password_from_file(account):
     # datafile = 'test-spreadsheet.csv'
     datafile = 'test-spreadsheet-extra-spaces.csv'
     account_header = 'Account-name'
@@ -27,8 +28,9 @@ def password_manager(account):
                     pyperclip.copy(password)
                     print("Password for account '{}' in paste buffer".format(account))
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Retrieve password.')
     parser.add_argument('account', type=str, help='account name')
     args = parser.parse_args()
-    password_manager(args.account)
+    get_password_from_file(args.account)
