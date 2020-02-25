@@ -36,4 +36,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Retrieve password.')
     parser.add_argument('account', type=str, help='account name')
     args = parser.parse_args()
-    get_password_from_file(args.account)
+    try:
+        get_password_from_file(args.account)
+    except RuntimeError as err:
+        print(err)
