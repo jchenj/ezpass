@@ -4,12 +4,11 @@ python3 getpass.py bird
 '''
 
 import csv
-import os
 import pyperclip
 import argparse
 
-
-DATAFILE = 'test-spreadsheet-extra-spaces.csv'     # test sheet w/o extra spaces also available in project files
+DATAFILE = 'test-spreadsheet-extra-spaces.csv'
+# DATAFILE = 'test-spreadsheet.csv'  # test sheet w/o extra spaces"
 
 
 def get_password_from_file(account):
@@ -17,17 +16,20 @@ def get_password_from_file(account):
     password_header = 'Password'
 
     # TODO: add argument validation
-    # TODO: If account_name not in acct col of spreadsheet, throw error with message "account_name not in spreadsheet"
     # TODO: If cell [row with account_name][password col] is empty, show error "no password entered for account_name"
 
     with open(DATAFILE, encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
+        found = False
         for row in reader:
             for k, v in row.items():
                 if k == account_header and v.strip() == account:  # Assumes headers are free of extra spaces
+                    found = True
                     password = row[password_header].strip()
                     pyperclip.copy(password)
                     print("Password for account '{}' in paste buffer".format(account))
+        if not found:
+            raise RuntimeError("Account '{}' not in file".format(account))
 
 
 if __name__ == "__main__":
