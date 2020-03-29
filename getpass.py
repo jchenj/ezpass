@@ -6,9 +6,13 @@ python3 getpass.py bird
 import csv
 import pyperclip
 import argparse
+import random
 
+PASSWORD_LENGTH = 8
+ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 DATAFILE = 'test-spreadsheet-extra-spaces.csv'
 # DATAFILE = 'test-spreadsheet.csv'  # test sheet w/o extra spaces"
+# Make sure that datafile is left with new line at the end so new account & password can be added correctly
 
 
 def get_password_from_file(account):
@@ -45,16 +49,29 @@ def check_if_account_exists(account):
         return False
 
 
+def generate_random_letter(alphabet):
+    index = random.randint(0, len(alphabet)-1)
+    letter = alphabet[index]
+    return letter
+
+
+def create_password(length):
+    password = ""
+    for i in range(length):
+        letter = generate_random_letter(ALPHABET)
+        password = password + letter
+    return password
+
+
 def create_new_account(account):
     if check_if_account_exists(account):
         raise RuntimeError("Account '{}' already exists".format(account))
-    print("Creating new account with", account)
-
-# generate password
-# open file for writing
-# add new record for file at the end of file
-# close & save file
-
+    new_pass = create_password(PASSWORD_LENGTH)
+    print("Creating new account with", account, new_pass)
+    fields = [account, new_pass]
+    with open(DATAFILE, 'a') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(fields)
 
 
 if __name__ == "__main__":
@@ -72,5 +89,8 @@ if __name__ == "__main__":
             get_password_from_file(args.get_pass)
         elif args.new_account is not None:
             create_new_account(args.new_account)
+        elif args.get_pass is None and args.new_account is None:
+            print("Error. Must give an argument.")
+            parser.print_help()
     except RuntimeError as err:
         print(err)
