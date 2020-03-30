@@ -15,7 +15,7 @@ DATAFILE = 'test-spreadsheet-extra-spaces.csv'
 # Make sure that datafile is left with new line at the end so new account & password can be added correctly
 
 
-def get_password_from_file(account):
+def get_password_from_file(account, print_to_screen):
     account_header = 'Account-name'
     password_header = 'Password'
 
@@ -29,8 +29,11 @@ def get_password_from_file(account):
                 # print(k, v)
                 if k == account_header and v.strip() == account:  # Assumes headers are free of extra spaces
                     password = row[password_header].strip()
-                    pyperclip.copy(password)
-                    print("Password for account '{}' in paste buffer".format(account))
+                    if print_to_screen:
+                        print("Password for account '{}' is '{}'".format(account, password))
+                    else:
+                        pyperclip.copy(password)
+                        print("Password for account '{}' in paste buffer".format(account))
                     return
     raise RuntimeError("Account '{}' not in file".format(account))
 
@@ -78,6 +81,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Retrieve password.')
     parser.add_argument('--get-pass', type=str, help='account name')
     parser.add_argument('--new-account', type=str, help='new account name')
+    parser.add_argument('--print-to-screen', action='store_true', help='print password to screen', required=False, default=False)
     args = parser.parse_args()
 
     print(args)
@@ -86,7 +90,7 @@ if __name__ == "__main__":
             # both are set: Error
             print("Error. Can't get password & create new account at same time")
         elif args.get_pass is not None:
-            get_password_from_file(args.get_pass)
+            get_password_from_file(args.get_pass, args.print_to_screen)
         elif args.new_account is not None:
             create_new_account(args.new_account)
         elif args.get_pass is None and args.new_account is None:
