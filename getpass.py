@@ -8,7 +8,6 @@ import pyperclip
 import argparse
 import random
 
-PASSWORD_LENGTH = 8
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 DATAFILE = 'test-spreadsheet-extra-spaces.csv'
 # DATAFILE = 'test-spreadsheet.csv'  # test sheet w/o extra spaces"
@@ -66,10 +65,10 @@ def create_password(length):
     return password
 
 
-def create_new_account(account):
+def create_new_account(account, password_length):
     if check_if_account_exists(account):
         raise RuntimeError("Account '{}' already exists".format(account))
-    new_pass = create_password(PASSWORD_LENGTH)
+    new_pass = create_password(password_length)
     print("Creating new account with", account, new_pass)
     fields = [account, new_pass]
     with open(DATAFILE, 'a') as csvfile:
@@ -81,18 +80,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Retrieve password.')
     parser.add_argument('--get-pass', type=str, help='account name')
     parser.add_argument('--new-account', type=str, help='new account name')
-    parser.add_argument('--print-to-screen', action='store_true', help='print password to screen', required=False, default=False)
+    parser.add_argument('--print-to-screen', action='store_true', help='print password to screen', required=False,
+                        default=False)
+    parser.add_argument('--password-length', type=int, help='password length', required=False, default=8)
     args = parser.parse_args()
 
     print(args)
     try:
+        if args.password_length < 1:
+            raise RuntimeError("Error. Password length must be greater than 0.")
         if args.get_pass is not None and args.new_account is not None:
             # both are set: Error
             print("Error. Can't get password & create new account at same time")
         elif args.get_pass is not None:
             get_password_from_file(args.get_pass, args.print_to_screen)
         elif args.new_account is not None:
-            create_new_account(args.new_account)
+            create_new_account(args.new_account, args.password_length)
         elif args.get_pass is None and args.new_account is None:
             print("Error. Must give an argument.")
             parser.print_help()
