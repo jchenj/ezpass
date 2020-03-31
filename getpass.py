@@ -21,7 +21,8 @@ def get_password_from_file(fname, account, print_to_screen):
     :param fname: name of file containing accounts & passwords
     :param account: account name
     :param print_to_screen: optional parameter to print password to screen
-    :return: password in paste buffer (default) or printed to screen (if optional parameter used)
+    :return: None
+    :side effect: password in paste buffer (default) or printed to screen (if optional parameter used)
     """
     account_header = 'Account-name'
     password_header = 'Password'
@@ -76,6 +77,12 @@ def generate_random_letter(alphabet):
 
 
 def create_password(length):
+    """
+    Creates a password of specified length using letters from ALPHABET
+    :param length: length of password - an integer > 0
+    :return: a password of specified length using letters from ALPHABET
+    """
+    assert(length > 0)
     password = ""
     for i in range(length):
         letter = generate_random_letter(ALPHABET)
@@ -84,6 +91,15 @@ def create_password(length):
 
 
 def create_new_account(fname, account, password_length):
+    """
+    For an account name that does not already exist in the file, appends the account name and password to the file
+    :param fname: name of file containing account & passwords
+    :param account: name of account to be created
+    :param password_length: length of password - an integer > 0
+    :return: None
+    :side effect: account name and password appended to existing file
+    """
+    assert(password_length > 0)
     if check_if_account_exists(fname, account):
         raise RuntimeError("Account '{}' already exists".format(account))
     new_pass = create_password(password_length)
@@ -92,6 +108,7 @@ def create_new_account(fname, account, password_length):
     with open(fname, 'a') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(fields)
+    return
 
 
 if __name__ == "__main__":
