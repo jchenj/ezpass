@@ -4,6 +4,7 @@ import pyperclip
 import random
 
 fname = 'test-file.csv'
+password_length = 2 * len(getpass.ALPHABET)
 
 
 class Tests(unittest.TestCase):
@@ -48,7 +49,8 @@ class Tests(unittest.TestCase):
         for letter in password:
             self.assertIn(letter, getpass.ALPHABET)
 
-    def get_non_existing_account(self):
+    def create_random_account(self):
+        #! TODO: ask what is means that method might be static - does this have to do with decorators?
         # create account length from 3-10
         length = random.randint(3, 10)
         # create a random string of specified length using letters in alphabet
@@ -56,13 +58,16 @@ class Tests(unittest.TestCase):
         for i in range(length):
             letter = getpass.generate_random_letter(getpass.ALPHABET)
             random_account = random_account + letter
+        return random_account
+
+    def get_non_existing_account(self):
+        random_account = self.create_random_account()
         if getpass.check_if_account_exists(fname, random_account):
-            return self.create_random_account()
+            return self.get_non_existing_account()
         else:
             return random_account
 
     def test_create_new_account(self):
-        password_length = 2 * len(getpass.ALPHABET)
         # account already exists in file
         account = "dog"
         try:
@@ -78,6 +83,24 @@ class Tests(unittest.TestCase):
         getpass.create_new_account(fname, account, password_length)
         ret = getpass.check_if_account_exists(fname, account)
         self.assertEqual(ret, True)
+
+    def test_delete_account_existing(self):
+        # account exists
+        account = self.get_non_existing_account()
+        getpass.create_new_account(fname, account, password_length)
+        getpass.delete_account(fname, account)
+        ret = getpass.check_if_account_exists(fname, account)
+        self.assertEqual(ret, False)
+
+    def test_delete_account_non_existing(self):
+        # account doesn't exist
+        account = self.get_non_existing_account()
+        try:
+            getpass.delete_account(fname, account)
+            self.fail("Did not raise expected error")
+        except RuntimeError as err:
+            pass
+
 
 
 if __name__ == '__main__':

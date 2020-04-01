@@ -111,6 +111,30 @@ def create_new_account(fname, account, password_length):
     return
 
 
+def delete_account(fname, account):
+    """
+    Deletes the specified account name and password
+    Assumes account name exists in the file
+    :param fname: name of file containing account & passwords
+    :param account: name of account to be deleted
+    :return: None
+    :side effect: file without account name and password
+    """
+    if not check_if_account_exists(fname, account):
+        raise RuntimeError("Account '{}' does not exist".format(account))
+    with open(fname, "r") as file:
+        data = list(csv.reader(file))
+    with open(fname, "w") as file:
+        writer = csv.writer(file)
+        for row in data:
+            if row[0] != account:
+                writer.writerow(row)
+    return
+
+#! TODO make delete_account runnable from command line by adding to __name__  and try/except logic
+#! TODO test delete_account from command line
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Retrieve password.')
     parser.add_argument('--get-pass', type=str, help='account name')
