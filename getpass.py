@@ -132,7 +132,7 @@ def delete_account(fname, account):
     return
 
 
-if __name__ == "__main__":
+def mainfunc():
     parser = argparse.ArgumentParser(description='Retrieve password.')
     parser.add_argument('--get-pass', type=str, help='account name')
     parser.add_argument('--new-account', type=str, help='new account name')
@@ -161,3 +161,7 @@ if __name__ == "__main__":
         create_new_account(DATAFILE, args.new_account, args.password_length)
     elif args.delete_account is not None:
         delete_account(DATAFILE, args.delete_account)
+
+
+if __name__ == "__main__":
+    mainfunc()
