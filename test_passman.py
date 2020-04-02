@@ -3,7 +3,7 @@ import unittest
 import pyperclip
 import random
 
-fname = 'test-file.csv'
+fname = 'test_file.csv'
 password_length = 2 * len(passman.ALPHABET)
 
 
@@ -101,6 +101,25 @@ class Tests(unittest.TestCase):
         except RuntimeError as err:
             pass
 
+    def test_change_password_existing(self):
+        # account exists
+        account = self.get_non_existing_account()
+        passman.create_new_account(fname, account, password_length)
+        passman.get_password_from_file(fname, account, False)
+        pw1 = pyperclip.paste()
+        passman.change_password(fname, account, password_length)
+        passman.get_password_from_file(fname, account, False)
+        pw2 = pyperclip.paste()
+        self.assertNotEqual(pw1, pw2)
+
+    def test_change_password_non_existing(self):
+        # account doesn't exist
+        account = self.get_non_existing_account()
+        try:
+            passman.change_password(fname, account, password_length)
+            self.fail("Did not raise expected error")
+        except RuntimeError as err:
+            pass
 
 
 if __name__ == '__main__':

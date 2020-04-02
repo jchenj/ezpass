@@ -9,7 +9,7 @@ import argparse
 import random
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
-DATAFILE = 'test-spreadsheet-extra-spaces.csv'
+DATAFILE = 'test_file.csv'
 # DATAFILE = 'test-spreadsheet.csv'  # test sheet w/o extra spaces"
 # Make sure that datafile is left with new line at the end so new account & password can be added correctly
 
@@ -122,13 +122,43 @@ def delete_account(fname, account):
     """
     if not check_if_account_exists(fname, account):
         raise RuntimeError("Account '{}' does not exist".format(account))
+    # read in the password file
     with open(fname, "r") as file:
         data = list(csv.reader(file))
+    # write out the password file except the account to delete
     with open(fname, "w") as file:
         writer = csv.writer(file)
         for row in data:
             if row[0] != account:
                 writer.writerow(row)
+    return
+
+
+def change_password(fname, account, password_length):
+    """
+    Changes password of specified file to a new password of specified length from ALPHABET
+    Assumes account name exists in file
+    Assumes password length is integer > 0
+    :param fname: name of file containing account & passwords
+    :param account: name of account for which password to be changed
+    :param password_length: length of password
+    :return: None
+    side effect: file with new password for specified account
+    """
+    if not check_if_account_exists(fname, account):
+        raise RuntimeError("Account '{}' does not exist".format(account))
+    new_password = create_password(password_length)
+    # read in the password file
+    with open(fname, "r", encoding='utf-8-sig') as file:
+        data = list(csv.reader(file))
+    # write out the account rows into file.
+    with open(fname, "w") as file:
+        writer = csv.writer(file)
+        # change the password for the specified account to the new password
+        for row in data:
+            if row[0].strip() == account:
+                row[1] = new_password
+            writer.writerow(row)
     return
 
 
@@ -140,13 +170,15 @@ def mainfunc():
                         default=False)
     parser.add_argument('--password-length', type=int, help='password length', required=False, default=8)
     parser.add_argument('--delete-account', type=str, help='delete specified account')
+    parser.add_argument('--change-pass', type=str, help='change password for specified account')
     args = parser.parse_args()
     print(args)
 
     get_pass_int = int(args.get_pass is not None)
     new_account_int = int(args.new_account is not None)
     delete_account_int = int(args.delete_account is not None)
-    param_sum = get_pass_int + new_account_int + delete_account_int
+    change_pass_int = int(args.change_pass is not None)
+    param_sum = get_pass_int + new_account_int + delete_account_int + change_pass_int
     if param_sum > 1:
         parser.print_help()
         raise RuntimeError("Error. Can only use one of these flags at a time")
@@ -161,7 +193,10 @@ def mainfunc():
         create_new_account(DATAFILE, args.new_account, args.password_length)
     elif args.delete_account is not None:
         delete_account(DATAFILE, args.delete_account)
+    elif args.change_pass is not None:
+        change_password(DATAFILE, args.change_pass, args.password_length)
 
 
 if __name__ == "__main__":
     mainfunc()
+
