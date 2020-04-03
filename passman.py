@@ -10,7 +10,6 @@ import random
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 DATAFILE = 'test_file.csv'
-# DATAFILE = 'test-spreadsheet.csv'  # test sheet w/o extra spaces"
 # Make sure that datafile is left with new line at the end so new account & password can be added correctly
 
 
@@ -27,9 +26,6 @@ def get_password_from_file(fname, account, print_to_screen):
     account_header = 'Account-name'
     password_header = 'Password'
 
-    # TODO: add argument validation
-    # TODO: If cell [row with account_name][password col] is empty, show error "no password entered for account_name"
-
     with open(fname, encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -41,7 +37,8 @@ def get_password_from_file(fname, account, print_to_screen):
                         print("Password for account '{}' is '{}'".format(account, password))
                     else:
                         pyperclip.copy(password)
-                        print("Password for account '{}' in paste buffer".format(account))
+                        #!TODO: discuss - moved line below to mainfunc()
+                        # print("Password for account '{}' in paste buffer".format(account))
                     return
     raise RuntimeError("Account '{}' not in file".format(account))
 
@@ -103,7 +100,9 @@ def create_new_account(fname, account, password_length):
     if check_if_account_exists(fname, account):
         raise RuntimeError("Account '{}' already exists".format(account))
     new_pass = create_password(password_length)
-    print("Creating new account with", account, new_pass)
+    #!TODO: disc - moved line below to mainfunc() - needed to remove new_pass param
+    #!TODO: would it be helpful/important to print password to screen? Thinking not
+    # print("Creating new account with", account, new_pass)
     fields = [account, new_pass]
     with open(fname, 'a') as csvfile:
         writer = csv.writer(csvfile)
@@ -187,14 +186,20 @@ def mainfunc():
         raise RuntimeError("Error. Must apply at least one flag")
     if args.get_pass is not None:
         get_password_from_file(DATAFILE, args.get_pass, args.print_to_screen)
+        if args.print_to_screen is False:
+            print("Password for account '{}' in paste buffer".format(args.get_pass))
     elif args.new_account is not None:
         if args.password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
+        print("Creating new account with", args.new_account)
         create_new_account(DATAFILE, args.new_account, args.password_length)
+        print("Account created")
     elif args.delete_account is not None:
         delete_account(DATAFILE, args.delete_account)
+        print("Deleted account:", args.delete_account)
     elif args.change_pass is not None:
         change_password(DATAFILE, args.change_pass, args.password_length)
+        print("Password changed for account:", args.change_pass)
 
 
 if __name__ == "__main__":
