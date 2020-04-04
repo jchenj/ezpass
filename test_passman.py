@@ -2,8 +2,9 @@ import passman
 import unittest
 import pyperclip
 import random
+import os.path
 
-fname = 'test_file.csv'
+fname = "test_file.csv"
 password_length = 2 * len(passman.ALPHABET)
 
 
@@ -23,7 +24,7 @@ class Tests(unittest.TestCase):
     def get_non_existing_account(self, fname):
         '''
         :return:
-        :param fname:
+        :param fname: Name of file with accounts & passwords
         :return: Account instance
         '''
         random_account = self.create_random_account()
@@ -39,6 +40,13 @@ class Tests(unittest.TestCase):
         letter = passman.generate_random_letter('abcd')
         self.assertEqual(len(letter), 1)
         self.assertIn(letter, 'abcd')
+
+    def test_create_password(self):
+        length = random.randint(1, (2 * len(passman.ALPHABET)))
+        password = passman.create_password(length)
+        self.assertEqual(len(password), length)
+        for letter in password:
+            self.assertIn(letter, passman.ALPHABET)
 
     def test_check_if_account_exists(self):
         account = passman.Account(fname, 'bird')
@@ -68,13 +76,6 @@ class Tests(unittest.TestCase):
         # any unexpected exceptions will be caught by unittest framework
         # not testing invalid account - print to screen
 
-    def test_create_password(self):
-        length = random.randint(1, (2 * len(passman.ALPHABET)))
-        password = passman.create_password(length)
-        self.assertEqual(len(password), length)
-        for letter in password:
-            self.assertIn(letter, passman.ALPHABET)
-
     def test_create_new_account(self):
         # account already exists in file
         account = passman.Account(fname, "dog")
@@ -101,7 +102,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(ret, False)
 
     def test_delete_account_non_existing(self):
-        # account doesn't existR
+        # account doesn't exist
         account = self.get_non_existing_account(fname)
         try:
             account.delete_account()
@@ -128,6 +129,25 @@ class Tests(unittest.TestCase):
             self.fail("Did not raise expected error")
         except RuntimeError as err:
             pass
+
+    def test_create_new_file_existing(self):
+        # filename exists in cwd
+        fname = "test_file.csv"
+        try:
+            passman.create_new_file(fname)
+            self.fail("Did not raise expected error")
+        except RuntimeError as err:
+            pass
+
+    def test_create_new_file_non_existing(self):
+        # filename doesn't exist yet in cwd
+        #! TODO: replace fname with non-existing account name (once helper funcs added)
+        fname = "another_new_file.csv"
+        ret = os.path.isfile(fname)
+        self.assertEqual(ret, False)
+        passman.create_new_file(fname)
+        ret = os.path.isfile(fname)
+        self.assertEqual(ret, True)
 
 
 if __name__ == '__main__':

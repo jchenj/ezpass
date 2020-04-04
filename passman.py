@@ -7,6 +7,7 @@ import csv
 import pyperclip
 import argparse
 import random
+import os.path
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 DATAFILE = 'test_file.csv'
@@ -138,6 +139,25 @@ class Account:
         return
 
 
+def create_new_file(fname):
+    """
+    Given a file name, creates a new .csv file with that name, and with header columns Account and Password
+    Assumes that the file name doesn't already exist in the current directory
+    :return: none
+    :side effect: .csv file with specified file name, and with header columns Account and Password
+    """
+    #! TODO: add an option to overwrite file or enter new fname
+    #! TODO: figure out best way to ensure that filename is desired format (e.g. .csv) catch error or append ending?
+    if os.path.isfile(fname):
+        raise RuntimeError("File '{}' already exists".format(fname))
+    #! TODO: discuss if makes more sense to use Writer or DictWriter
+    with open(fname, 'w', newline='') as csvfile:
+        fieldnames = ['Account-name', 'Password']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+    return
+
+
 def generate_random_letter(alphabet):
     """
     Generates random letter from alphabet
@@ -172,6 +192,7 @@ def mainfunc():
     parser.add_argument('--password-length', type=int, help='password length', required=False, default=8)
     parser.add_argument('--delete-account', type=str, help='delete specified account')
     parser.add_argument('--change-pass', type=str, help='change password for specified account')
+    parser.add_argument('--new-file', type=str, help='create new file for passwords')
     args = parser.parse_args()
     print(args)
 
@@ -179,7 +200,8 @@ def mainfunc():
     new_account_int = int(args.new_account is not None)
     delete_account_int = int(args.delete_account is not None)
     change_pass_int = int(args.change_pass is not None)
-    param_sum = get_pass_int + new_account_int + delete_account_int + change_pass_int
+    new_file_int = int(args.new_file is not None)
+    param_sum = get_pass_int + new_account_int + delete_account_int + change_pass_int + new_file_int
     if param_sum > 1:
         parser.print_help()
         raise RuntimeError("Error. Can only use one of these flags at a time")
@@ -207,6 +229,9 @@ def mainfunc():
         account = Account(DATAFILE, args.change_pass)
         account.change_password(args.password_length)
         print("Password changed for account:", args.change_pass)
+    elif args.new_file is not None:
+        create_new_file(args.new_file)
+        print("New file created:", args.new_file)
     return
 
 
