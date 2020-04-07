@@ -15,7 +15,6 @@ encodedText = text.encode()
 password = input("Enter password: ")
 encodedPassword = password.encode()
 
-# password = b'mypassword'
 # salt = os.urandom(16)
 salt = b"1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d"
 kdf = PBKDF2HMAC(
