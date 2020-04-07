@@ -6,7 +6,10 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import sys
 
-password = b'mypassword'
+# pass = mypass
+password = input("Enter password: ")
+encodedPassword = password.encode()
+
 # salt = os.urandom(16)
 salt = b'1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d'
 kdf = PBKDF2HMAC(
@@ -16,7 +19,7 @@ kdf = PBKDF2HMAC(
     iterations=100000,
     backend=default_backend()
  )
-key = base64.urlsafe_b64encode(kdf.derive(password))
+key = base64.urlsafe_b64encode(kdf.derive(encodedPassword))
 f = Fernet(key)
 
 with open("myText.enc", "r") as enc_file:
