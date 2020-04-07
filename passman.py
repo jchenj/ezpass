@@ -213,10 +213,37 @@ def encrypt_file(fname):
     cipher_text = f.encrypt(encodedText)
     print(cipher_text)
 
-    with open("test_file.enc", "wb") as f:
-        f.write(cipher_text)
+    enc_fname = fname + ".enc"
+
+    with open(enc_fname, "wb") as enc_file:
+        enc_file.write(cipher_text)
 
     print("Finished writing encrypted file")
+
+
+def decrypt_file(fname):
+    # pass = mypass
+    password = input("Enter password: ")
+    encodedPassword = password.encode()
+
+    # salt = os.urandom(16)
+    salt = b'1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d'
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(encodedPassword))
+    f = Fernet(key)
+
+    with open(fname, "r") as enc_file:
+        cipher_text = enc_file.read()
+
+    enc_cipher_text = cipher_text.encode()
+    message = f.decrypt(enc_cipher_text)
+    print(message)
 
 
 def mainfunc():
