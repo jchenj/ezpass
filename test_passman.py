@@ -3,12 +3,38 @@ import unittest
 import pyperclip
 import random
 import os.path
+import os.remove()
 
 fname = "test_file.csv"
 password_length = 2 * len(passman.ALPHABET)
 
 
 class Tests(unittest.TestCase):
+    #! TODO: check initial version of set-up, teardown & discuss next steps - how to change tests also
+    def setUp(self) -> None:
+        """
+        Set up for test by creating a new file for passwords and accounts, and populating the file
+        with three accounts
+        :return:
+        """
+        print("Tests setUp: begin")
+        fname = "new_test_file.csv"
+        passman.create_new_file(fname)
+        ac1 = passman.Account(fname, "bird")
+        self.test_create_new_account()
+        ac2 = passman.Account(fname, "fish")
+        ac3 = passman.Account(fname, "dog")
+        print("Tests setUp: end")
+
+    def tearDown(self) -> None:
+        """
+        Clean up after test by deleting file containing passwords and accounts
+        :return:
+        """
+        print("Tests tearDown: begin")
+        fname = "new_test_file.csv"
+        os.remove(fname)
+        print("Tests tearDown: end")
 
     def create_random_fname(self):
         length = random.randint(3, 10)
@@ -27,7 +53,7 @@ class Tests(unittest.TestCase):
             return random_fname
 
     def create_random_account(self):
-        #! TODO: create static func from this method?
+        # ! TODO: create static func from this method?
         # create account length from 3-10
         length = random.randint(3, 10)
         # create a random string of specified length using letters in alphabet
@@ -50,7 +76,7 @@ class Tests(unittest.TestCase):
         else:
             return account
 
- ###############################################################
+    ###############################################################
 
     def test_generate_random_letter(self):
         letter = passman.generate_random_letter('abcd')
