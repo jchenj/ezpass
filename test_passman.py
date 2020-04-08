@@ -11,7 +11,9 @@ password_length = 2 * len(passman.ALPHABET)
 
 class Tests(unittest.TestCase):
     #! TODO: check initial version of set-up, teardown & discuss next steps - how to change tests also
-    def setUp(self) -> None:
+
+    @classmethod
+    def setUpClass(cls) -> None:
         """
         Set up for test by creating a new file for passwords and accounts, and populating the file
         with three accounts
@@ -20,13 +22,14 @@ class Tests(unittest.TestCase):
         print("Tests setUp: begin")
         fname = "new_test_file.csv"
         passman.create_new_file(fname)
-        ac1 = passman.Account(fname, "bird")
+        cls.ac1 = passman.Account(fname, "bird")
         self.test_create_new_account()
-        ac2 = passman.Account(fname, "fish")
-        ac3 = passman.Account(fname, "dog")
+        cls.ac2 = passman.Account(fname, "fish")
+        cls.c3 = passman.Account(fname, "dog")
         print("Tests setUp: end")
 
-    def tearDown(self) -> None:
+    @classmethod
+    def tearDownClass(cls) -> None:
         """
         Clean up after test by deleting file containing passwords and accounts
         :return:
