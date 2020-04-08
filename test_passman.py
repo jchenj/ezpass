@@ -10,6 +10,22 @@ password_length = 2 * len(passman.ALPHABET)
 
 class Tests(unittest.TestCase):
 
+    def create_random_fname(self):
+        length = random.randint(3, 10)
+        random_fname = ""
+        for i in range(length):
+            letter = passman.generate_random_letter(passman.ALPHABET)
+            random_fname = random_fname + letter
+        full_random_fname = random_fname + '.csv'
+        return full_random_fname
+
+    def get_non_existing_fname(self):
+        random_fname = self.create_random_fname()
+        if os.path.isfile(random_fname):
+            self.get_non_existing_fname()
+        else:
+            return random_fname
+
     def create_random_account(self):
         #! TODO: create static func from this method?
         # create account length from 3-10
@@ -22,11 +38,11 @@ class Tests(unittest.TestCase):
         return random_account
 
     def get_non_existing_account(self, fname):
-        '''
-        :return:
+        """
+        Given a filename, returns an account that does not already exist
         :param fname: Name of file with accounts & passwords
         :return: Account instance
-        '''
+        """
         random_account = self.create_random_account()
         account = passman.Account(fname, random_account)
         if account.check_if_account_exists():
@@ -141,8 +157,7 @@ class Tests(unittest.TestCase):
 
     def test_create_new_file_non_existing(self):
         # filename doesn't exist yet in cwd
-        #! TODO: replace fname with non-existing account name (once helper funcs added)
-        fname = "another_new_file.csv"
+        fname = self.get_non_existing_fname()
         ret = os.path.isfile(fname)
         self.assertEqual(ret, False)
         passman.create_new_file(fname)
