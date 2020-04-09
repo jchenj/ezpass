@@ -2,32 +2,36 @@ import passman
 import unittest
 import pyperclip
 import random
-import os.path
-import os.remove()
+import os
+import csv
 
 fname = "test_file.csv"
 password_length = 2 * len(passman.ALPHABET)
 
 
 class Tests(unittest.TestCase):
-    #! TODO: check initial version of set-up, teardown & discuss next steps - how to change tests also
-
     @classmethod
     def setUpClass(cls) -> None:
         """
         Set up for test by creating a new file for passwords and accounts, and populating the file
         with three accounts
-        :return:
+        :return: None
+        :side effect: new file for passwords and accounts, populated with three accounts
         """
         print("Tests setUp: begin")
-        fname = "new_test_file.csv"
+        # check if file 'fname' already exists each time before test runs. If it does, delete it.
+        if os.path.isfile(fname):
+            os.remove(fname)
         passman.create_new_file(fname)
-        cls.ac1 = passman.Account(fname, "bird")
-        self.test_create_new_account()
-        cls.ac2 = passman.Account(fname, "fish")
-        cls.c3 = passman.Account(fname, "dog")
+        ac1 = passman.Account(fname, "bird")
+        ac1.create_new_account(8)
+        ac2 = passman.Account(fname, "fish")
+        ac2.create_new_account(8)
+        ac3 = passman.Account(fname, "dog")
+        ac3.create_new_account(8)
         print("Tests setUp: end")
 
+    #! TODO: discuss how to test teardown class method
     @classmethod
     def tearDownClass(cls) -> None:
         """
@@ -35,7 +39,9 @@ class Tests(unittest.TestCase):
         :return:
         """
         print("Tests tearDown: begin")
-        fname = "new_test_file.csv"
+        # check if file 'fname' exists at the beginning of each teardown. If it doesn't throw error.
+        if not os.path.isfile(fname):
+            raise RuntimeError("Error: File {} does not exist.".format(fname))
         os.remove(fname)
         print("Tests tearDown: end")
 
@@ -81,6 +87,7 @@ class Tests(unittest.TestCase):
 
     ###############################################################
 
+    #! TODO: discuss - would it be better to use ALPHABET?
     def test_generate_random_letter(self):
         letter = passman.generate_random_letter('abcd')
         self.assertEqual(len(letter), 1)
@@ -93,44 +100,52 @@ class Tests(unittest.TestCase):
         for letter in password:
             self.assertIn(letter, passman.ALPHABET)
 
-    def test_check_if_account_exists(self):
+    def test_check_if_account_exists_existing_acct(self):
         account = passman.Account(fname, 'bird')
-        # existing account
         ret = account.check_if_account_exists()
         self.assertEqual(ret, True)
-        # non-existing account
-        account = passman.Account(fname, 'pig')
+
+    def test_check_if_account_exists_non_existing_acct(self):
+        account = self.get_non_existing_account(fname)
         ret = account.check_if_account_exists()
         self.assertEqual(ret, False)
 
-    def test_get_password_from_file(self):
+    #! TODO: discuss if this is a good way to check get password guven current random pws
+    #! TODO: create option to set PWs manually and change tests using manually given pws
+    def test_get_password_from_file_valid_acct_default(self):
         account = passman.Account(fname, 'bird')
-        password = "feathers"
-        # valid account - default
+        with open(fname, "r") as file:
+            data = csv.reader(file)
+            for row in data:
+                if row[0].strip() == account.acname:
+                    password = row[1]
+        # print_to_screen is False
         account.get_password_from_file(False)
         pw = pyperclip.paste()
         self.assertEqual(pw, password)
-        # not testing valid account - print screen
-        account = passman.Account(fname, 'pig')
-        # invalid account - default
+
+    def test_get_password_from_file_invalid_acct_default(self):
+        account = self.get_non_existing_account(fname)
         try:
+            # print_to_screen is False
             account.get_password_from_file(False)
             self.fail("Did not raise expected exception")
         except RuntimeError as err:
             pass
         # any unexpected exceptions will be caught by unittest framework
-        # not testing invalid account - print to screen
 
-    def test_create_new_account(self):
-        # account already exists in file
-        account = passman.Account(fname, "dog")
+    # not testing get_password_from_file() with print_to_screen option for valid or invalid accounts
+
+    def test_create_new_account_existing_acct(self):
+        account = passman.Account(fname, "fish")
         try:
             account.create_new_account(password_length)
             self.fail("Did not raise expected exception")
         except RuntimeError as err:
             pass
         # any unexpected exceptions will be caught by unittest framework
-        # account doesn't yet exist in file
+
+    def test_create_new_account_non_existing_acct(self):
         account = self.get_non_existing_account(fname)
         ret = account.check_if_account_exists()
         self.assertEqual(ret, False)
@@ -139,7 +154,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(ret, True)
 
     def test_delete_account_existing(self):
-        # account exists
         account = self.get_non_existing_account(fname)
         account.create_new_account(password_length)
         account.delete_account()
@@ -147,7 +161,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(ret, False)
 
     def test_delete_account_non_existing(self):
-        # account doesn't exist
         account = self.get_non_existing_account(fname)
         try:
             account.delete_account()
@@ -156,9 +169,9 @@ class Tests(unittest.TestCase):
             pass
 
     def test_change_password_existing(self):
-        # account exists
         account = self.get_non_existing_account(fname)
         account.create_new_account(password_length)
+        # print_to_screen is False
         account.get_password_from_file(False)
         pw1 = pyperclip.paste()
         account.change_password(password_length)
@@ -167,7 +180,6 @@ class Tests(unittest.TestCase):
         self.assertNotEqual(pw1, pw2)
 
     def test_change_password_non_existing(self):
-        # account doesn't exist
         account = self.get_non_existing_account(fname)
         try:
             account.change_password(password_length)
@@ -176,7 +188,6 @@ class Tests(unittest.TestCase):
             pass
 
     def test_create_new_file_existing(self):
-        # filename exists in cwd
         fname = "test_file.csv"
         try:
             passman.create_new_file(fname)
@@ -185,13 +196,13 @@ class Tests(unittest.TestCase):
             pass
 
     def test_create_new_file_non_existing(self):
-        # filename doesn't exist yet in cwd
-        fname = self.get_non_existing_fname()
-        ret = os.path.isfile(fname)
+        fname2 = self.get_non_existing_fname()
+        ret = os.path.isfile(fname2)
         self.assertEqual(ret, False)
-        passman.create_new_file(fname)
-        ret = os.path.isfile(fname)
+        passman.create_new_file(fname2)
+        ret = os.path.isfile(fname2)
         self.assertEqual(ret, True)
+        os.remove(fname2)
 
 
 if __name__ == '__main__':
