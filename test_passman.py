@@ -7,8 +7,8 @@ import csv
 
 #! TODO: should these be allcaps?
 fname = "test_file.csv"
-#! TODO: would this be better to be passman.ALPHABET?
-alphabet = 'abcd'
+#! TODO: would this be better to be a different alphabet than used in program default?
+test_alphabet = passman.ALPHABET
 password_length = 2 * len(passman.ALPHABET)
 
 
@@ -27,11 +27,11 @@ class Tests(unittest.TestCase):
             os.remove(fname)
         passman.create_new_file(fname)
         ac1 = passman.Account(fname, "bird")
-        ac1.create_new_account(alphabet, 8)
+        ac1.create_new_account(test_alphabet, 8)
         ac2 = passman.Account(fname, "fish")
-        ac2.create_new_account(alphabet, 8)
+        ac2.create_new_account(test_alphabet, 8)
         ac3 = passman.Account(fname, "dog")
-        ac3.create_new_account(alphabet, 8)
+        ac3.create_new_account(test_alphabet, 8)
         print("Tests setUp: end")
 
     #! TODO: discuss how to test teardown class method
@@ -92,12 +92,12 @@ class Tests(unittest.TestCase):
 
     #! TODO: discuss - would it be better to use ALPHABET?
     def test_generate_random_letter(self):
-        letter = passman.generate_random_letter(alphabet)
+        letter = passman.generate_random_letter(test_alphabet)
         self.assertEqual(len(letter), 1)
-        self.assertIn(letter, alphabet)
+        self.assertIn(letter, test_alphabet)
 
     def test_create_password(self):
-        alphabet = alphabet
+        alphabet = test_alphabet
         length = random.randint(1, (2 * len(passman.ALPHABET)))
         password = passman.create_password(alphabet, length)
         self.assertEqual(len(password), length)
@@ -144,7 +144,7 @@ class Tests(unittest.TestCase):
     def test_create_new_account_existing_acct(self):
         account = passman.Account(fname, "fish")
         try:
-            account.create_new_account(password_length)
+            account.create_new_account(test_alphabet, password_length)
             self.fail("Did not raise expected exception")
         except RuntimeError as err:
             pass
@@ -154,13 +154,13 @@ class Tests(unittest.TestCase):
         account = self.get_non_existing_account(fname)
         ret = account.check_if_account_exists()
         self.assertEqual(ret, False)
-        account.create_new_account(password_length)
+        account.create_new_account(test_alphabet, password_length)
         ret = account.check_if_account_exists()
         self.assertEqual(ret, True)
 
     def test_delete_account_existing(self):
         account = self.get_non_existing_account(fname)
-        account.create_new_account(password_length)
+        account.create_new_account(test_alphabet, password_length)
         account.delete_account()
         ret = account.check_if_account_exists()
         self.assertEqual(ret, False)
@@ -175,11 +175,11 @@ class Tests(unittest.TestCase):
 
     def test_change_password_existing(self):
         account = self.get_non_existing_account(fname)
-        account.create_new_account(alphabet, password_length)
+        account.create_new_account(test_alphabet, password_length)
         # print_to_screen is False
         account.get_password_from_file(False)
         pw1 = pyperclip.paste()
-        account.change_password(alphabet, password_length)
+        account.change_password(test_alphabet, password_length)
         account.get_password_from_file(False)
         pw2 = pyperclip.paste()
         self.assertNotEqual(pw1, pw2)
@@ -187,7 +187,7 @@ class Tests(unittest.TestCase):
     def test_change_password_non_existing(self):
         account = self.get_non_existing_account(fname)
         try:
-            account.change_password(password_length)
+            account.change_password(test_alphabet, password_length)
             self.fail("Did not raise expected error")
         except RuntimeError as err:
             pass

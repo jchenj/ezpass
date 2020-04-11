@@ -57,7 +57,7 @@ class Account:
                     writer.writerow(row)
         return
 
-    def change_password(self, password_length):
+    def change_password(self, alphabet, password_length):
         """
         Changes password of specified file to a new password of specified length from ALPHABET
         Assumes account name exists in file
@@ -68,7 +68,7 @@ class Account:
         """
         if not self.check_if_account_exists():
             raise RuntimeError("Account '{}' does not exist".format(self.acname))
-        new_password = create_password(password_length)
+        new_password = create_password(alphabet, password_length)
         # read in the password file
         with open(self.fname, "r", encoding='utf-8-sig') as file:
             data = list(csv.reader(file))
