@@ -125,7 +125,7 @@ class Account:
                         return
         raise RuntimeError("Account '{}' not in file".format(self.acname))
 
-    def create_new_account(self, password_length):
+    def create_new_account(self, alphabet, password_length):
         """
         For an account name that does not already exist in the file, appends the account name and password to the file
         :param password_length: length of password - an integer > 0
@@ -135,7 +135,7 @@ class Account:
         assert (password_length > 0)
         if self.check_if_account_exists():
             raise RuntimeError("Account '{}' already exists".format(self.acname))
-        new_pass = create_password(password_length)
+        new_pass = create_password(alphabet, password_length)
         # !TODO: disc - moved line below to mainfunc() - needed to remove new_pass param
         # !TODO: would it be helpful/important to print password to screen? Thinking not
         # print("Creating new account with", account, new_pass)
@@ -176,16 +176,17 @@ def generate_random_letter(alphabet):
     return letter
 
 
-def create_password(length):
+def create_password(alphabet, length):
     """
     Creates a password of specified length using letters from ALPHABET
+    :param alphabet: string representing full alphabet
     :param length: length of password - an integer > 0
     :return: a password of specified length using letters from ALPHABET
     """
     assert(length > 0)
     password = ""
     for i in range(length):
-        letter = generate_random_letter(ALPHABET)
+        letter = generate_random_letter(alphabet)
         password = password + letter
     return password
 
@@ -281,8 +282,9 @@ def mainfunc():
         if args.password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
         account = Account(DATAFILE, args.new_account)
+        alphabet = ALPHABET
         print("Creating new account with", args.new_account)
-        account.create_new_account(args.password_length)
+        account.create_new_account(alphabet, args.password_length)
         print("Account created")
     elif args.delete_account is not None:
         account = Account(DATAFILE, args.delete_account)
@@ -300,4 +302,3 @@ def mainfunc():
 
 if __name__ == "__main__":
     mainfunc()
-
