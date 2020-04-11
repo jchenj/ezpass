@@ -1,14 +1,10 @@
-'''
-Test with:
-python3 getpass.py bird
-'''
 
 import csv
 import pyperclip
 import argparse
 import random
 import os.path
-# imports for crypto below
+# imports for crypto
 import base64
 import os
 from cryptography.fernet import Fernet
@@ -31,6 +27,17 @@ class Account:
         self.fname = fname
         self.acname = acname
 
+    def _readFile(self):
+        with open(self.fname, "r", encoding='utf-8-sig') as file:
+            data = list(csv.reader(file))
+            # option to use DictReader - decide which to use
+            # reader = csv.DictReader(csvfile)
+        return data
+
+#! TODO: write & refactor write file
+    def _writeFile(self):
+        pass
+
     def get_fname(self):
         return self.fname
 
@@ -47,8 +54,7 @@ class Account:
         if not self.check_if_account_exists():
             raise RuntimeError("Account '{}' does not exist".format(self.acname))
         # read in the password file
-        with open(self.fname, "r") as file:
-            data = list(csv.reader(file))
+        data = self._readFile()
         # write out the password file except the account to delete
         with open(self.fname, "w") as file:
             writer = csv.writer(file)
@@ -70,8 +76,7 @@ class Account:
             raise RuntimeError("Account '{}' does not exist".format(self.acname))
         new_password = create_password(alphabet, password_length)
         # read in the password file
-        with open(self.fname, "r", encoding='utf-8-sig') as file:
-            data = list(csv.reader(file))
+        data = self._readFile()
         # write out the account rows into file.
         with open(self.fname, "w") as file:
             writer = csv.writer(file)
@@ -89,14 +94,11 @@ class Account:
         account_header = 'Account-name'
         password_header = 'Password'
 
-        with open(self.fname, encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                for k, v in row.items():
-                    # print(k, v)
-                    if k == account_header and v.strip() == self.acname:  # Assumes headers are free of extra spaces
-                        return True
-            return False
+        data = self._readFile()
+        for row in data:
+            if row[0].strip() == self.acname:
+                return True
+        return False
 
     def get_password_from_file(self, print_to_screen):
         """
@@ -109,20 +111,15 @@ class Account:
         account_header = 'Account-name'
         password_header = 'Password'
 
-        with open(self.fname, encoding='utf-8-sig') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                for k, v in row.items():
-                    # print(k, v)
-                    if k == account_header and v.strip() == self.acname:  # Assumes headers are free of extra spaces
-                        password = row[password_header].strip()
-                        if print_to_screen:
-                            print("Password for account '{}' is '{}'".format(self.acname, password))
-                        else:
-                            pyperclip.copy(password)
-                            # !TODO: discuss - moved line below to mainfunc()
-                            # print("Password for account '{}' in paste buffer".format(account))
-                        return
+        data = self._readFile()
+        for row in data:
+            if row[0].strip() == self.acname:
+                password = row[1].strip()
+                if print_to_screen:
+                    print("Password for account '{}' is '{}'".format(self.acname, password))
+                else:
+                    pyperclip.copy(password)
+                return
         raise RuntimeError("Account '{}' not in file".format(self.acname))
 
     def create_new_account(self, alphabet, password_length):
