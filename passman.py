@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
-DATAFILE = 'test_file.csv'
+DATAFILE = 'cl_test_file.csv'
 # Make sure that datafile is left with new line at the end so new account & password can be added correctly
 
 
@@ -257,6 +257,7 @@ def mainfunc():
     parser.add_argument('--delete-account', type=str, help='delete specified account')
     parser.add_argument('--change-pass', type=str, help='change password for specified account')
     parser.add_argument('--new-file', type=str, help='create new file for passwords')
+    parser.add_argument('--alphabet', type=str, help='full alphabet')
     args = parser.parse_args()
     print(args)
 
@@ -282,9 +283,8 @@ def mainfunc():
         if args.password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
         account = Account(DATAFILE, args.new_account)
-        alphabet = ALPHABET
         print("Creating new account with", args.new_account)
-        account.create_new_account(alphabet, args.password_length)
+        account.create_new_account(ALPHABET, args.password_length)
         print("Account created")
     elif args.delete_account is not None:
         account = Account(DATAFILE, args.delete_account)
@@ -292,7 +292,7 @@ def mainfunc():
         print("Deleted account:", args.delete_account)
     elif args.change_pass is not None:
         account = Account(DATAFILE, args.change_pass)
-        account.change_password(args.password_length)
+        account.change_password(ALPHABET, args.password_length)
         print("Password changed for account:", args.change_pass)
     elif args.new_file is not None:
         create_new_file(args.new_file)
