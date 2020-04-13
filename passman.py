@@ -1,4 +1,3 @@
-
 import csv
 import pyperclip
 import argparse
@@ -14,6 +13,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 DATAFILE = 'cl_test_file.csv'
+
+
 # Make sure that datafile is left with new line at the end so new account & password can be added correctly
 
 
@@ -34,9 +35,42 @@ class Account:
             # reader = csv.DictReader(csvfile)
         return data
 
-#! TODO: write & refactor write file
-    def _writeFile(self):
-        pass
+    # ! TODO: discuss how/if to create _writeFile given that all write code is different
+    # ! TODO: incorp encrypt/decrypt into API funcs
+    # def _writeFile(self):
+    #     # del account
+    #     # write out the password file except the account to delete
+    #     with open(self.fname, "w") as file:
+    #         writer = csv.writer(file)
+    #         for row in data:
+    #             if row[0] != self.acname:
+    #                 writer.writerow(row)
+    #     return
+    #
+    #     #change pw
+    #     # write out the account rows into file.
+    #     with open(self.fname, "w") as file:
+    #         writer = csv.writer(file)
+    #         # change the password for the specified account to the new password
+    #         for row in data:
+    #             if row[0].strip() == self.acname:
+    #                 row[1] = new_password
+    #             writer.writerow(row)
+    #     return
+    #
+    #     #new acct
+    #     fields = [self.acname, new_pass]
+    #     with open(self.fname, 'a') as csvfile:
+    #         writer = csv.writer(csvfile)
+    #         writer.writerow(fields)
+    #     return
+    #
+    #     # new file
+    #     with open(fname, 'w', newline='') as csvfile:
+    #         fieldnames = ['Account-name', 'Password']
+    #         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    #         writer.writeheader()
+    #     return
 
     def get_fname(self):
         return self.fname
@@ -95,6 +129,7 @@ class Account:
         password_header = 'Password'
 
         data = self._readFile()
+        print(data)
         for row in data:
             if row[0].strip() == self.acname:
                 return True
@@ -108,23 +143,26 @@ class Account:
         :return: None
         :side effect: password in paste buffer (default) or printed to screen (if optional parameter used)
         """
-        account_header = 'Account-name'
-        password_header = 'Password'
 
         data = self._readFile()
         for row in data:
             if row[0].strip() == self.acname:
                 password = row[1].strip()
-                if print_to_screen:
-                    print("Password for account '{}' is '{}'".format(self.acname, password))
+                if password == "":
+                    print("Password field is empty for account '{}'".format(self.acname))
+                    # ! TODO: what needed to here so 'pw in print buffer' message from mainfunc doesn't print?
                 else:
-                    pyperclip.copy(password)
+                    if print_to_screen:
+                        print("Password for account '{}' is '{}'".format(self.acname, password))
+                    else:
+                        pyperclip.copy(password)
                 return
         raise RuntimeError("Account '{}' not in file".format(self.acname))
 
     def create_new_account(self, alphabet, password_length):
         """
         For an account name that does not already exist in the file, appends the account name and password to the file
+        :param alphabet: string of the full alphabet
         :param password_length: length of password - an integer > 0
         :return: None
         :side effect: account name and password appended to existing file
@@ -133,6 +171,7 @@ class Account:
         if self.check_if_account_exists():
             raise RuntimeError("Account '{}' already exists".format(self.acname))
         new_pass = create_password(alphabet, password_length)
+        print(new_pass)
         # !TODO: disc - moved line below to mainfunc() - needed to remove new_pass param
         # !TODO: would it be helpful/important to print password to screen? Thinking not
         # print("Creating new account with", account, new_pass)
@@ -150,11 +189,11 @@ def create_new_file(fname):
     :return: none
     :side effect: .csv file with specified file name, and with header columns Account and Password
     """
-    #! TODO: add an option to overwrite file or enter new fname
-    #! TODO: figure out best way to ensure that filename is desired format (e.g. .csv) catch error or append ending?
+    # ! TODO: add an option to overwrite file or enter new fname
+    # ! TODO: figure out best way to ensure that filename is desired format (e.g. .csv) catch error or append ending?
     if os.path.isfile(fname):
         raise RuntimeError("File '{}' already exists".format(fname))
-    #! TODO: discuss if makes more sense to use Writer or DictWriter
+    # ! TODO: discuss if makes more sense to use Writer or DictWriter
     with open(fname, 'w', newline='') as csvfile:
         fieldnames = ['Account-name', 'Password']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -168,7 +207,7 @@ def generate_random_letter(alphabet):
     :param alphabet: string representing full alphabet
     :return: one random letter from the alphabet
     """
-    index = random.randint(0, len(alphabet)-1)
+    index = random.randint(0, len(alphabet) - 1)
     letter = alphabet[index]
     return letter
 
@@ -180,7 +219,7 @@ def create_password(alphabet, length):
     :param length: length of password - an integer > 0
     :return: a password of specified length using letters from ALPHABET
     """
-    assert(length > 0)
+    assert (length > 0)
     password = ""
     for i in range(length):
         letter = generate_random_letter(alphabet)
@@ -205,7 +244,7 @@ def encrypt_file(fname):
         salt=salt,
         iterations=100000,
         backend=default_backend()
-     )
+    )
     key = base64.urlsafe_b64encode(kdf.derive(encodedPassword))
     f = Fernet(key)
     cipher_text = f.encrypt(encodedText)
