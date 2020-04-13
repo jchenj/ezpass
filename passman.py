@@ -13,8 +13,6 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 DATAFILE = 'cl_test_file.csv'
-FILE_FORMAT = '.csv'
-
 
 # Make sure that datafile is left with new line at the end so new account & password can be added correctly
 
@@ -34,42 +32,12 @@ class Account:
             data = list(csv.reader(file))
         return data
 
-    # ! TODO: discuss how/if to create _writeFile given that all write code is different
-    # ! TODO: incorp encrypt/decrypt into API funcs
-    # def _writeFile(self):
-    #     # del account
-    #     # write out the password file except the account to delete
-    #     with open(self.fname, "w") as file:
-    #         writer = csv.writer(file)
-    #         for row in data:
-    #             if row[0] != self.acname:
-    #                 writer.writerow(row)
-    #     return
-    #
-    #     #change pw
-    #     # write out the account rows into file.
-    #     with open(self.fname, "w") as file:
-    #         writer = csv.writer(file)
-    #         # change the password for the specified account to the new password
-    #         for row in data:
-    #             if row[0].strip() == self.acname:
-    #                 row[1] = new_password
-    #             writer.writerow(row)
-    #     return
-    #
-    #     #new acct
-    #     fields = [self.acname, new_pass]
-    #     with open(self.fname, 'a') as csvfile:
-    #         writer = csv.writer(csvfile)
-    #         writer.writerow(fields)
-    #     return
-    #
-    #     # new file
-    #     with open(fname, 'w', newline='') as csvfile:
-    #         fieldnames = ['Account-name', 'Password']
-    #         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-    #         writer.writeheader()
-    #     return
+    def _writeFile(self, data):
+        with open(self.fname, "w") as file:
+            writer = csv.writer(file)
+            for row in data:
+                writer.writerow(row)
+        return
 
     def get_fname(self):
         return self.fname
@@ -77,6 +45,7 @@ class Account:
     def get_acname(self):
         return self.acname
 
+    #! TODO: review refactored func
     def delete_account(self):
         """
         Deletes the specified account name and password
@@ -89,11 +58,8 @@ class Account:
         # read in the password file
         data = self._readFile()
         # write out the password file except the account to delete
-        with open(self.fname, "w") as file:
-            writer = csv.writer(file)
-            for row in data:
-                if row[0] != self.acname:
-                    writer.writerow(row)
+        new_data = [row for row in data if row[0] != self.acname]
+        self._writeFile(new_data)
         return
 
     def change_password(self, alphabet, password_length):
@@ -110,14 +76,10 @@ class Account:
         new_password = create_password(alphabet, password_length)
         # read in the password file
         data = self._readFile()
-        # write out the account rows into file.
-        with open(self.fname, "w") as file:
-            writer = csv.writer(file)
-            # change the password for the specified account to the new password
-            for row in data:
-                if row[0].strip() == self.acname:
-                    row[1] = new_password
-                writer.writerow(row)
+        for row in data:
+            if row[0].strip() == self.acname:
+                row[1] = new_password
+        self._writeFile(data)
         return
 
     def check_if_account_exists(self):
@@ -170,14 +132,14 @@ class Account:
         if self.check_if_account_exists():
             raise RuntimeError("Account '{}' already exists".format(self.acname))
         new_pass = create_password(alphabet, password_length)
-        print(new_pass)
         # !TODO: disc - moved line below to mainfunc() - needed to remove new_pass param
         # !TODO: would it be helpful/important to print password to screen? Thinking not
         # print("Creating new account with", account, new_pass)
+        data = self._readFile()
+        print(data)
         fields = [self.acname, new_pass]
-        with open(self.fname, 'a') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(fields)
+        data.append(fields)
+        self._writeFile(data)
         return
 
 
@@ -193,7 +155,7 @@ def create_new_file(fname):
     if os.path.isfile(fname):
         raise RuntimeError("File '{}' already exists".format(fname))
     # ! TODO: discuss if makes more sense to use Writer or DictWriter
-    with open(fname + FILE_FORMAT, 'w', newline='') as csvfile:
+    with open(fname, 'w', newline='') as csvfile:
         fieldnames = ['Account-name', 'Password']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -331,7 +293,7 @@ def mainfunc():
         print("Password changed for account:", args.change_pass)
     elif args.new_file is not None:
         create_new_file(args.new_file)
-        print("New file created:", args.new_file + FILE_FORMAT)
+        print("New file created:", args.new_file)
     return
 
 

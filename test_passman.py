@@ -34,7 +34,6 @@ class Tests(unittest.TestCase):
         ac3.create_new_account(test_alphabet, 8)
         print("Tests setUp: end")
 
-    #! TODO: discuss how to test teardown class method
     @classmethod
     def tearDownClass(cls) -> None:
         """
