@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 DATAFILE = 'cl_test_file.csv'
+FILE_FORMAT = '.csv'
 
 
 # Make sure that datafile is left with new line at the end so new account & password can be added correctly
@@ -31,8 +32,6 @@ class Account:
     def _readFile(self):
         with open(self.fname, "r", encoding='utf-8-sig') as file:
             data = list(csv.reader(file))
-            # option to use DictReader - decide which to use
-            # reader = csv.DictReader(csvfile)
         return data
 
     # ! TODO: discuss how/if to create _writeFile given that all write code is different
@@ -194,7 +193,7 @@ def create_new_file(fname):
     if os.path.isfile(fname):
         raise RuntimeError("File '{}' already exists".format(fname))
     # ! TODO: discuss if makes more sense to use Writer or DictWriter
-    with open(fname, 'w', newline='') as csvfile:
+    with open(fname + FILE_FORMAT, 'w', newline='') as csvfile:
         fieldnames = ['Account-name', 'Password']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -332,7 +331,7 @@ def mainfunc():
         print("Password changed for account:", args.change_pass)
     elif args.new_file is not None:
         create_new_file(args.new_file)
-        print("New file created:", args.new_file)
+        print("New file created:", args.new_file + FILE_FORMAT)
     return
 
 
