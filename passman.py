@@ -33,6 +33,8 @@ class Account:
         return data
 
     def _writeFile(self, data):
+        encrypt_file(self.fname, data)
+
         with open(self.fname, "w") as file:
             writer = csv.writer(file)
             for row in data:
@@ -136,7 +138,6 @@ class Account:
         # !TODO: would it be helpful/important to print password to screen? Thinking not
         # print("Creating new account with", account, new_pass)
         data = self._readFile()
-        print(data)
         fields = [self.acname, new_pass]
         data.append(fields)
         self._writeFile(data)
