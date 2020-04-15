@@ -14,8 +14,10 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 DATAFILE = 'cl_test_file.csv'
 
+
 # Make sure that datafile is left with new line at the end so new account & password can be added correctly
 
+ENCRYPT = False
 
 class Account:
 
@@ -28,17 +30,26 @@ class Account:
         self.acname = acname
 
     def _readFile(self):
-        with open(self.fname, "r", encoding='utf-8-sig') as file:
-            data = list(csv.reader(file))
+        if ENCRYPT:
+            contents = decrypt_file(self.fname)
+            data = []
+            rows = contents.split('\n')
+            for r in rows:
+                data.append(r.split(','))
+
+        else:
+            with open(self.fname, "r", encoding='utf-8-sig') as file:
+                data = list(csv.reader(file))
         return data
 
     def _writeFile(self, data):
-        encrypt_file(self.fname, data)
-
-        with open(self.fname, "w") as file:
-            writer = csv.writer(file)
-            for row in data:
-                writer.writerow(row)
+        if ENCRYPT:
+            encrypt_file(self.fname, data)
+        else:
+            with open(self.fname, "w") as file:
+                writer = csv.writer(file)
+                for row in data:
+                    writer.writerow(row)
         return
 
     def get_fname(self):
@@ -47,7 +58,6 @@ class Account:
     def get_acname(self):
         return self.acname
 
-    #! TODO: review refactored func
     def delete_account(self):
         """
         Deletes the specified account name and password
@@ -69,6 +79,7 @@ class Account:
         Changes password of specified file to a new password of specified length from ALPHABET
         Assumes account name exists in file
         Assumes password length is integer > 0
+        :param alphabet: string of full alphabet
         :param password_length: length of password
         :return: None
         side effect: file with new password for specified account
@@ -156,10 +167,14 @@ def create_new_file(fname):
     if os.path.isfile(fname):
         raise RuntimeError("File '{}' already exists".format(fname))
     # ! TODO: discuss if makes more sense to use Writer or DictWriter
-    with open(fname, 'w', newline='') as csvfile:
-        fieldnames = ['Account-name', 'Password']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
+    fieldnames = ['Account-name', 'Password']
+    if ENCRYPT:
+        # make fieldnames list of lists to match data in ecrypt file
+        encrypt_file(fname, [fieldnames])
+    else:
+        with open(fname, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
     return
 
 
@@ -189,13 +204,16 @@ def create_password(alphabet, length):
     return password
 
 
-def encrypt_file(fname):
-    with open(fname, 'r') as orig_file:
-        text = orig_file.read()
-        encodedText = text.encode()
+def encrypt_file(fname, data):
+    # Takes data - plain text in memory
+    # Transforms data into a string
+    dataStr = '\n'.join(','.join(row) for row in data)
+    # Then proceed with func - encodedText = text.encode
+    encodedData = dataStr.encode()
 
     # pass = mypass
-    password = input("Enter password: ")
+    # password = input("Enter password: ")
+    password = 'hello'
     encodedPassword = password.encode()
 
     # salt = os.urandom(16)
@@ -209,20 +227,17 @@ def encrypt_file(fname):
     )
     key = base64.urlsafe_b64encode(kdf.derive(encodedPassword))
     f = Fernet(key)
-    cipher_text = f.encrypt(encodedText)
-    print(cipher_text)
+    cipher_text = f.encrypt(encodedData)
 
-    enc_fname = fname + ".enc"
-
-    with open(enc_fname, "wb") as enc_file:
+    with open(fname, "wb") as enc_file:
         enc_file.write(cipher_text)
-
-    print("Finished writing encrypted file")
+    return
 
 
 def decrypt_file(fname):
     # pass = mypass
-    password = input("Enter password: ")
+    # password = input("Enter password: ")
+    password = 'hello'
     encodedPassword = password.encode()
 
     # salt = os.urandom(16)
@@ -242,7 +257,8 @@ def decrypt_file(fname):
 
     enc_cipher_text = cipher_text.encode()
     message = f.decrypt(enc_cipher_text)
-    print(message)
+    str_message = message.decode()
+    return str_message
 
 
 def mainfunc():
