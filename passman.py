@@ -11,10 +11,11 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
-
 # Make sure that datafile is left with new line at the end so new account & password can be added correctly
 
+ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
+
+# ENCRYPT is set as global variable in __main__ func. Also set here because it's needed for testing
 ENCRYPT = True
 
 
@@ -122,7 +123,7 @@ class Account:
                 password = row[1].strip()
                 if password == "":
                     print("Password field is empty for account '{}'".format(self.acname))
-                    # ! TODO: what needed to here so 'pw in print buffer' message from mainfunc doesn't print?
+                    # ! TODO: what needed to put here so 'pw in print buffer' message from mainfunc doesn't print?
                 else:
                     if print_to_screen:
                         print("Password for account '{}' is '{}'".format(self.acname, password))
@@ -164,7 +165,6 @@ def create_new_file(fname):
     # ! TODO: figure out best way to ensure that filename is desired format (e.g. .csv) catch error or append ending?
     if os.path.isfile(fname):
         raise RuntimeError("File '{}' already exists".format(fname))
-    # ! TODO: discuss if makes more sense to use Writer or DictWriter
     fieldnames = ['Account-name', 'Password']
     if ENCRYPT:
         # make fieldnames list of lists to match data in ecrypt file
@@ -266,15 +266,15 @@ def mainfunc():
     parser = argparse.ArgumentParser(description='Retrieve password.')
     parser.add_argument('-f', '--file', type=str, help='file name', required=True)
     parser.add_argument('-g', '--get-pass', type=str, help='account name')
-    parser.add_argument('-n', '--new-account', type=str, help='new account name')
+    parser.add_argument('-na', '--new-account', type=str, help='new account name')
     parser.add_argument('-p', '--print-to-screen', action='store_true', help='print password to screen', required=False,
                         default=False)
     parser.add_argument('-l', '--password-length', type=int, help='password length', required=False, default=8)
     parser.add_argument('-d', '--delete-account', type=str, help='delete specified account')
-    parser.add_argument('-c', '--change-pass', type=str, help='change password for specified account')
-    parser.add_argument('-newf', '--new-file', action='store_true', help='whether or not to create new file')
+    parser.add_argument('-cp', '--change-pass', type=str, help='change password for specified account')
+    parser.add_argument('-nf', '--new-file', action='store_true', help='whether or not to create new file')
     parser.add_argument('-e', '--encrypt', action='store_true', help='whether or not file is encrypted')
-    parser.add_argument('--alphabet', type=str, help='full alphabet')
+    parser.add_argument('-a', '--alphabet', type=str, help='full alphabet')
     args = parser.parse_args()
 
     assert args.file is not None
@@ -295,7 +295,7 @@ def mainfunc():
         raise RuntimeError("Error. Can only use one of these flags at a time")
     if param_sum == 0:
         parser.print_help()
-        raise RuntimeError("Error. Must apply at least one flag")
+        raise RuntimeError("Error. Must use --file and at least one additional flag")
 
     if args.get_pass is not None:
         account = Account(fname, args.get_pass)
