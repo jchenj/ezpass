@@ -7,6 +7,7 @@ import csv
 
 #! TODO: should these be allcaps?
 fname = "test_file.csv"
+FILE_PASSWORD = "hello"
 #! TODO: would this be better to be a different alphabet than used in program default?
 test_alphabet = passman.ALPHABET
 password_length = 2 * len(passman.ALPHABET)
@@ -25,12 +26,12 @@ class Tests(unittest.TestCase):
         # check if file 'fname' already exists each time before test runs. If it does, delete it.
         if os.path.isfile(fname):
             os.remove(fname)
-        passman.create_new_file(fname)
-        ac1 = passman.Account(fname, "bird")
+        passman.create_new_file(fname, FILE_PASSWORD)
+        ac1 = passman.Account(fname, "bird", FILE_PASSWORD)
         ac1.create_new_account(test_alphabet, 8)
-        ac2 = passman.Account(fname, "fish")
+        ac2 = passman.Account(fname, "fish", FILE_PASSWORD)
         ac2.create_new_account(test_alphabet, 8)
-        ac3 = passman.Account(fname, "dog")
+        ac3 = passman.Account(fname, "dog", FILE_PASSWORD)
         ac3.create_new_account(test_alphabet, 8)
         print("Tests setUp: end")
 
@@ -81,7 +82,7 @@ class Tests(unittest.TestCase):
         :return: Account instance
         """
         random_account = self.create_random_account()
-        account = passman.Account(fname, random_account)
+        account = passman.Account(fname, random_account, FILE_PASSWORD)
         if account.check_if_account_exists():
             return self.get_non_existing_account(fname)
         else:
@@ -105,7 +106,7 @@ class Tests(unittest.TestCase):
             self.assertIn(letter, passman.ALPHABET)
 
     def test_check_if_account_exists_existing_acct(self):
-        account = passman.Account(fname, 'bird')
+        account = passman.Account(fname, 'bird', FILE_PASSWORD)
         ret = account.check_if_account_exists()
         self.assertEqual(ret, True)
 
@@ -121,7 +122,7 @@ class Tests(unittest.TestCase):
     def test_get_password_from_file_valid_acct_default(self):
         if passman.ENCRYPT:
             return
-        account = passman.Account(fname, 'bird')
+        account = passman.Account(fname, 'bird', FILE_PASSWORD)
         with open(fname, "r") as file:
             data = csv.reader(file)
             for row in data:
@@ -145,7 +146,7 @@ class Tests(unittest.TestCase):
     # not testing get_password_from_file() with print_to_screen option for valid or invalid accounts
 
     def test_create_new_account_existing_acct(self):
-        account = passman.Account(fname, "fish")
+        account = passman.Account(fname, "fish", FILE_PASSWORD)
         try:
             account.create_new_account(test_alphabet, password_length)
             self.fail("Did not raise expected exception")
@@ -198,7 +199,7 @@ class Tests(unittest.TestCase):
     def test_create_new_file_existing(self):
         fname = "test_file.csv"
         try:
-            passman.create_new_file(fname)
+            passman.create_new_file(fname, FILE_PASSWORD)
             self.fail("Did not raise expected error")
         except RuntimeError as err:
             pass
@@ -207,7 +208,7 @@ class Tests(unittest.TestCase):
         fname2 = self.get_non_existing_fname()
         ret = os.path.isfile(fname2)
         self.assertEqual(ret, False)
-        passman.create_new_file(fname2)
+        passman.create_new_file(fname2, FILE_PASSWORD)
         ret = os.path.isfile(fname2)
         self.assertEqual(ret, True)
         os.remove(fname2)

@@ -21,17 +21,19 @@ ENCRYPT = True
 
 class Account:
 
-    def __init__(self, fname, acname):
+    def __init__(self, fname, acname, password):
         """
+        :param password:
         :param fname: name of file containing accounts & passwords
         :param acname: account name
         """
         self.fname = fname
         self.acname = acname
+        self.password = password
 
     def _readFile(self):
         if ENCRYPT:
-            contents = decrypt_file(self.fname)
+            contents = decrypt_file(self.fname, self.password)
             data = []
             rows = contents.split('\n')
             for r in rows:
@@ -43,7 +45,7 @@ class Account:
 
     def _writeFile(self, data):
         if ENCRYPT:
-            encrypt_file(self.fname, data)
+            encrypt_file(self.fname, data, self.password)
         else:
             with open(self.fname, "w") as file:
                 writer = csv.writer(file)
@@ -154,7 +156,7 @@ class Account:
         return
 
 
-def create_new_file(fname):
+def create_new_file(fname, password):
     """
     Given a file name, creates a new .csv file with that name, and with header columns Account and Password
     Assumes that the file name doesn't already exist in the current directory
@@ -168,7 +170,7 @@ def create_new_file(fname):
     fieldnames = ['Account-name', 'Password']
     if ENCRYPT:
         # make fieldnames list of lists to match data in ecrypt file
-        encrypt_file(fname, [fieldnames])
+        encrypt_file(fname, [fieldnames], password)
     else:
         with open(fname, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -202,7 +204,7 @@ def create_password(alphabet, length):
     return password
 
 
-def encrypt_file(fname, data):
+def encrypt_file(fname, data, password):
     # Takes data - plain text in memory
     # Transform data into a string
     dataStr = ''
@@ -214,7 +216,6 @@ def encrypt_file(fname, data):
 
     # pass = mypass
     # password = input("Enter password: ")
-    password = 'hello'
     encodedPassword = password.encode()
 
     # salt = os.urandom(16)
@@ -235,10 +236,9 @@ def encrypt_file(fname, data):
     return
 
 
-def decrypt_file(fname):
+def decrypt_file(fname, password):
     # pass = mypass
     # password = input("Enter password: ")
-    password = 'hello'
     encodedPassword = password.encode()
 
     # salt = os.urandom(16)
@@ -267,7 +267,7 @@ def mainfunc():
     parser.add_argument('-f', '--file', type=str, help='file name', required=True)
     parser.add_argument('-g', '--get-pass', type=str, help='account name')
     parser.add_argument('-na', '--new-account', type=str, help='new account name')
-    parser.add_argument('-p', '--print-to-screen', action='store_true', help='print password to screen', required=False,
+    parser.add_argument('-print', '--print-to-screen', action='store_true', help='print password to screen', required=False,
                         default=False)
     parser.add_argument('-l', '--password-length', type=int, help='password length', required=False, default=8)
     parser.add_argument('-d', '--delete-account', type=str, help='delete specified account')
@@ -281,6 +281,10 @@ def mainfunc():
     fname = args.file
     global ENCRYPT
     ENCRYPT = args.encrypt
+    if args.encrypt:
+        password = input("Enter password for file {}: ".format(fname))
+    else:
+        password = None
 
     print(args)
 
@@ -298,27 +302,27 @@ def mainfunc():
         raise RuntimeError("Error. Must use --file and at least one additional flag")
 
     if args.get_pass is not None:
-        account = Account(fname, args.get_pass)
+        account = Account(fname, args.get_pass, password)
         account.get_password_from_file(args.print_to_screen)
         if args.print_to_screen is False:
             print("Password for account '{}' in paste buffer".format(args.get_pass))
     elif args.new_account is not None:
         if args.password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
-        account = Account(fname, args.new_account)
+        account = Account(fname, args.new_account, password)
         print("Creating new account with", args.new_account)
         account.create_new_account(ALPHABET, args.password_length)
         print("Account created")
     elif args.delete_account is not None:
-        account = Account(fname, args.delete_account)
+        account = Account(fname, args.delete_account, password)
         account.delete_account()
         print("Deleted account:", args.delete_account)
     elif args.change_pass is not None:
-        account = Account(fname, args.change_pass)
+        account = Account(fname, args.change_pass, password)
         account.change_password(ALPHABET, args.password_length)
         print("Password changed for account:", args.change_pass)
     elif args.new_file is True:
-        create_new_file(fname)
+        create_new_file(fname, password)
         print("New file created:", args.new_file)
     return
 
