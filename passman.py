@@ -12,12 +12,11 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
-DATAFILE = 'cl_test_file.csv'
-
 
 # Make sure that datafile is left with new line at the end so new account & password can be added correctly
 
-ENCRYPT = False
+ENCRYPT = True
+
 
 class Account:
 
@@ -36,7 +35,6 @@ class Account:
             rows = contents.split('\n')
             for r in rows:
                 data.append(r.split(','))
-
         else:
             with open(self.fname, "r", encoding='utf-8-sig') as file:
                 data = list(csv.reader(file))
@@ -206,9 +204,12 @@ def create_password(alphabet, length):
 
 def encrypt_file(fname, data):
     # Takes data - plain text in memory
-    # Transforms data into a string
-    dataStr = '\n'.join(','.join(row) for row in data)
-    # Then proceed with func - encodedText = text.encode
+    # Transform data into a string
+    dataStr = ''
+    for elem in data:
+        row = (','.join(elem))
+        dataStr = dataStr + row + '\n'
+    # Alternatively, with list comprehension: dataStr = '\n'.join(','.join(row) for row in data)
     encodedData = dataStr.encode()
 
     # pass = mypass
@@ -263,23 +264,31 @@ def decrypt_file(fname):
 
 def mainfunc():
     parser = argparse.ArgumentParser(description='Retrieve password.')
-    parser.add_argument('--get-pass', type=str, help='account name')
-    parser.add_argument('--new-account', type=str, help='new account name')
-    parser.add_argument('--print-to-screen', action='store_true', help='print password to screen', required=False,
+    parser.add_argument('-f', '--file', type=str, help='file name', required=True)
+    parser.add_argument('-g', '--get-pass', type=str, help='account name')
+    parser.add_argument('-n', '--new-account', type=str, help='new account name')
+    parser.add_argument('-p', '--print-to-screen', action='store_true', help='print password to screen', required=False,
                         default=False)
-    parser.add_argument('--password-length', type=int, help='password length', required=False, default=8)
-    parser.add_argument('--delete-account', type=str, help='delete specified account')
-    parser.add_argument('--change-pass', type=str, help='change password for specified account')
-    parser.add_argument('--new-file', type=str, help='create new file for passwords')
+    parser.add_argument('-l', '--password-length', type=int, help='password length', required=False, default=8)
+    parser.add_argument('-d', '--delete-account', type=str, help='delete specified account')
+    parser.add_argument('-c', '--change-pass', type=str, help='change password for specified account')
+    parser.add_argument('-newf', '--new-file', action='store_true', help='whether or not to create new file')
+    parser.add_argument('-e', '--encrypt', action='store_true', help='whether or not file is encrypted')
     parser.add_argument('--alphabet', type=str, help='full alphabet')
     args = parser.parse_args()
+
+    assert args.file is not None
+    fname = args.file
+    global ENCRYPT
+    ENCRYPT = args.encrypt
+
     print(args)
 
     get_pass_int = int(args.get_pass is not None)
     new_account_int = int(args.new_account is not None)
     delete_account_int = int(args.delete_account is not None)
     change_pass_int = int(args.change_pass is not None)
-    new_file_int = int(args.new_file is not None)
+    new_file_int = int(args.new_file is True)
     param_sum = get_pass_int + new_account_int + delete_account_int + change_pass_int + new_file_int
     if param_sum > 1:
         parser.print_help()
@@ -289,27 +298,27 @@ def mainfunc():
         raise RuntimeError("Error. Must apply at least one flag")
 
     if args.get_pass is not None:
-        account = Account(DATAFILE, args.get_pass)
+        account = Account(fname, args.get_pass)
         account.get_password_from_file(args.print_to_screen)
         if args.print_to_screen is False:
             print("Password for account '{}' in paste buffer".format(args.get_pass))
     elif args.new_account is not None:
         if args.password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
-        account = Account(DATAFILE, args.new_account)
+        account = Account(fname, args.new_account)
         print("Creating new account with", args.new_account)
         account.create_new_account(ALPHABET, args.password_length)
         print("Account created")
     elif args.delete_account is not None:
-        account = Account(DATAFILE, args.delete_account)
+        account = Account(fname, args.delete_account)
         account.delete_account()
         print("Deleted account:", args.delete_account)
     elif args.change_pass is not None:
-        account = Account(DATAFILE, args.change_pass)
+        account = Account(fname, args.change_pass)
         account.change_password(ALPHABET, args.password_length)
         print("Password changed for account:", args.change_pass)
-    elif args.new_file is not None:
-        create_new_file(args.new_file)
+    elif args.new_file is True:
+        create_new_file(fname)
         print("New file created:", args.new_file)
     return
 
