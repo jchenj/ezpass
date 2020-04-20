@@ -25,8 +25,10 @@ class Account:
         """
         :param password:
         :param fname: name of file containing accounts & passwords
-        :param acname: account name
+        :param acname: account name (cannot contain spaces, newlines or tabs)
         """
+        if " " in acname:
+            raise RuntimeError("Spaces not allowed in account names")
         self.fname = fname
         self.acname = acname
         self.password = password
@@ -233,8 +235,6 @@ def encrypt_file(fname, data, password):
     # Alternatively, with list comprehension: dataStr = '\n'.join(','.join(row) for row in data)
     encodedData = dataStr.encode()
 
-    # pass = mypass
-    # password = input("Enter password: ")
     encodedPassword = password.encode()
 
     # salt = os.urandom(16)
@@ -256,8 +256,6 @@ def encrypt_file(fname, data, password):
 
 
 def decrypt_file(fname, password):
-    # pass = mypass
-    # password = input("Enter password: ")
     encodedPassword = password.encode()
 
     # salt = os.urandom(16)
