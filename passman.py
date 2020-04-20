@@ -330,6 +330,8 @@ def mainfunc():
         account = Account(fname, args.new_account, password)
         print("Creating new account with", args.new_account)
         account.create_new_account(ALPHABET, args.password_length)
+        if args.set_pw is not None:
+            account.set_pw(args.set_pw)
         print("Account created")
     elif args.delete_account is not None:
         account = Account(fname, args.delete_account, password)
