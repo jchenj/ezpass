@@ -11,6 +11,7 @@ FILE_PASSWORD = "hello"
 #! TODO: would this be better to be a different alphabet than used in program default?
 test_alphabet = passman.ALPHABET
 password_length = 2 * len(passman.ALPHABET)
+specified_pass = "myn3wpass"
 
 
 class Tests(unittest.TestCase):
@@ -31,7 +32,7 @@ class Tests(unittest.TestCase):
         ac1.create_new_account(test_alphabet, 8)
         ac2 = passman.Account(fname, "fish", FILE_PASSWORD)
         ac2.create_new_account(test_alphabet, 8)
-        ac3 = passman.Account(fname, "dog", FILE_PASSWORD)
+        ac3 = passman.Account(fname, " dog", FILE_PASSWORD)
         ac3.create_new_account(test_alphabet, 8)
         print("Tests setUp: end")
 
@@ -177,21 +178,41 @@ class Tests(unittest.TestCase):
         except RuntimeError as err:
             pass
 
-    def test_change_password_existing(self):
+    def test_change_password_existing_rand(self):
         account = self.get_non_existing_account(fname)
         account.create_new_account(test_alphabet, password_length)
         # print_to_screen is False
         account.get_password_from_file(False)
         pw1 = pyperclip.paste()
-        account.change_password(test_alphabet, password_length)
+        account.set_pw_rand(test_alphabet, password_length)
         account.get_password_from_file(False)
         pw2 = pyperclip.paste()
         self.assertNotEqual(pw1, pw2)
 
-    def test_change_password_non_existing(self):
+    def test_change_password_existing_specified_pass(self):
+        account = self.get_non_existing_account(fname)
+        account.create_new_account(test_alphabet, password_length)
+        # print_to_screen is False
+        account.get_password_from_file(False)
+        pw1 = pyperclip.paste()
+        account.set_pw(specified_pass)
+        account.get_password_from_file(False)
+        pw2 = pyperclip.paste()
+        self.assertNotEqual(pw1, pw2)
+        self.assertEqual(pw2, specified_pass)
+
+    def test_change_password_non_existing_rand(self):
         account = self.get_non_existing_account(fname)
         try:
-            account.change_password(test_alphabet, password_length)
+            account.set_pw_rand(test_alphabet, password_length)
+            self.fail("Did not raise expected error")
+        except RuntimeError as err:
+            pass
+
+    def test_change_password_non_existing_specified_pass(self):
+        account = self.get_non_existing_account(fname)
+        try:
+            account.set_pw(specified_pass)
             self.fail("Did not raise expected error")
         except RuntimeError as err:
             pass

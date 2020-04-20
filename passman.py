@@ -75,19 +75,36 @@ class Account:
         self._writeFile(new_data)
         return
 
-    def change_password(self, alphabet, password_length):
+    def set_pw_rand(self, alphabet, password_length):
         """
-        Changes password of specified file to a new password of specified length from ALPHABET
-        Assumes account name exists in file
+        Sets password of account to a new random password of specified length from ALPHABET
         Assumes password length is integer > 0
         :param alphabet: string of full alphabet
         :param password_length: length of password
+        :return new_password: string
+        """
+        new_password = create_password(alphabet, password_length)
+        self._change_password(new_password)
+
+    def set_pw(self, specified_pass):
+        """
+        Sets password of specified account to a new specified password
+        Assumes account names exists in file
+        :param specified_pass: specified new password (string)
+        :return: new_password: string
+        """
+        self._change_password(specified_pass)
+
+    def _change_password(self, new_password):
+        """
+        Changes password of specified account to new (pre-set) password
+        Assumes account name exists in file
+        :param new_password: new password (string)
         :return: None
-        side effect: file with new password for specified account
+        :side effect: file with account updated with new password
         """
         if not self.check_if_account_exists():
             raise RuntimeError("Account '{}' does not exist".format(self.acname))
-        new_password = create_password(alphabet, password_length)
         # read in the password file
         data = self._readFile()
         for row in data:
@@ -271,10 +288,11 @@ def mainfunc():
                         default=False)
     parser.add_argument('-l', '--password-length', type=int, help='password length', required=False, default=8)
     parser.add_argument('-d', '--delete-account', type=str, help='delete specified account')
-    parser.add_argument('-cp', '--change-pass', type=str, help='change password for specified account')
     parser.add_argument('-nf', '--new-file', action='store_true', help='whether or not to create new file')
     parser.add_argument('-e', '--encrypt', action='store_true', help='whether or not file is encrypted')
-    parser.add_argument('-a', '--alphabet', type=str, help='full alphabet')
+    parser.add_argument('-a', '--alphabet', type=str, help='full alphabet', required=False)
+    parser.add_argument('-cp', '--change-pass', type=str, help='account to change password of')
+    parser.add_argument('-sp', '--set-pw', type=str, help='set specified password', default=None)
     args = parser.parse_args()
 
     assert args.file is not None
@@ -319,7 +337,10 @@ def mainfunc():
         print("Deleted account:", args.delete_account)
     elif args.change_pass is not None:
         account = Account(fname, args.change_pass, password)
-        account.change_password(ALPHABET, args.password_length)
+        if args.set_pw is None:
+            account.set_pw_rand(ALPHABET, args.password_length)
+        else:
+            account.set_pw(args.set_pw)
         print("Password changed for account:", args.change_pass)
     elif args.new_file is True:
         create_new_file(fname, password)
