@@ -14,6 +14,9 @@ Command-line password manager written in Python
 ## Data file
 To run this program you will need a valid password file in CSV format. To be valid, the file must contain the account names in Column A and passwords in Column B. 
 
+## Dependencies
+* Requires [pyperclip](https://pypi.org/project/pyperclip/)
+
 ## Command line usage:
 ````
 passman.py [-h] [--get-pass GET_PASS] [--new-account NEW_ACCOUNT]
