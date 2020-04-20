@@ -105,6 +105,8 @@ class Account:
         """
         if not self.check_if_account_exists():
             raise RuntimeError("Account '{}' does not exist".format(self.acname))
+        if new_password == "":
+            raise RuntimeError("Password cannot be empty")
         # read in the password file
         data = self._readFile()
         for row in data:
