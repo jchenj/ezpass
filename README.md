@@ -1,18 +1,16 @@
-# getpass
+# passman
 
 Command-line password manager written in Python
 
 ## Features:
 
+* Maintains passwords in a password-protected file
 * Copy password of specified account from file to paste buffer
 * Print password of specified account to screen
 * Add account (with password) to file
 * Delete account (and password) from file
-* Change password for specified account
-* Create a new file for account information, formatted with columns for "Account" and "Password"
-
-## Data file
-To run this program you will need a valid password file in CSV format. To be valid, the file must contain the account names in Column A and passwords in Column B. 
+* Change password for an account
+* Create a new passwords
 
 ## Dependencies
 * Requires [pyperclip](https://pypi.org/project/pyperclip/)
