@@ -3,6 +3,7 @@ import pyperclip
 import argparse
 import random
 import os.path
+import pickle
 # imports for crypto
 import base64
 import os
@@ -16,7 +17,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
 # ENCRYPT is set as global variable in __main__ func. Also set here because it's needed for testing
-ENCRYPT = True
+ENCRYPT = False
 
 
 class Account:
@@ -41,18 +42,23 @@ class Account:
             for r in rows:
                 data.append(r.split(','))
         else:
-            with open(self.fname, "r", encoding='utf-8-sig') as file:
-                data = list(csv.reader(file))
+            # with open(self.fname, "r", encoding='utf-8-sig') as file:
+            #     data = list(csv.reader(file))
+            with open(self.fname, 'rb') as file:
+                data = pickle.load(file)
+
         return data
 
     def _writeFile(self, data):
         if ENCRYPT:
             encrypt_file(self.fname, data, self.password)
         else:
-            with open(self.fname, "w") as file:
-                writer = csv.writer(file)
-                for row in data:
-                    writer.writerow(row)
+            with open(self.fname, 'wb') as file:
+                pickle.dump(data, file)
+            # with open(self.fname, "w") as file:
+            #     writer = csv.writer(file)
+            #     for row in data:
+            #         writer.writerow(row)
         return
 
     def get_fname(self):
@@ -193,9 +199,12 @@ def create_new_file(fname, password):
         # make fieldnames list of lists to match data in ecrypt file
         encrypt_file(fname, [fieldnames], password)
     else:
-        with open(fname, 'w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
+        # with open(fname, 'w', newline='') as csvfile:
+        #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        #     writer.writeheader()
+        data = []
+        with open(fname, 'wb') as file:
+            pickle.dump(data, file)
     return
 
 

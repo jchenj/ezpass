@@ -32,7 +32,7 @@ class Tests(unittest.TestCase):
         ac1.create_new_account(test_alphabet, 8)
         ac2 = passman.Account(fname, "fish", FILE_PASSWORD)
         ac2.create_new_account(test_alphabet, 8)
-        ac3 = passman.Account(fname, " dog", FILE_PASSWORD)
+        ac3 = passman.Account(fname, "dog", FILE_PASSWORD)
         ac3.create_new_account(test_alphabet, 8)
         print("Tests setUp: end")
 
