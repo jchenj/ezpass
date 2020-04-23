@@ -1,4 +1,3 @@
-import csv
 import pyperclip
 import argparse
 import random
@@ -94,7 +93,7 @@ class Account:
         self._writeFile(new_data)
         return
 
-    def set_pw_rand(self, alphabet, password_length):
+    def set_acpass_rand(self, alphabet, password_length):
         """
         Sets password of account to a new random password of specified length from ALPHABET
         Assumes password length is integer > 0
@@ -105,7 +104,7 @@ class Account:
         new_password = create_password(alphabet, password_length)
         self._change_password(new_password)
 
-    def set_pw(self, specified_pass):
+    def set_acpass(self, specified_pass):
         """
         Sets password of specified account to a new specified password
         Assumes account names exists in file
@@ -139,9 +138,6 @@ class Account:
         """
         If account exists in file, returns True. If account doesn't exist in file, returns False.
         """
-        account_header = 'Account-name'
-        password_header = 'Password'
-
         data = self._readFile()
         for account in data:
             if account.acname.strip() == self.acname:
@@ -244,7 +240,7 @@ def create_password(alphabet, length):
     return password
 
 
-def encrypt_file(fname, data, password):
+def encrypt_file(fname, data, fpassword):
     # Takes data - plain text in memory
     # Transform data into a string
     dataStr = ''
@@ -254,7 +250,7 @@ def encrypt_file(fname, data, password):
     # Alternatively, with list comprehension: dataStr = '\n'.join(','.join(row) for row in data)
     encodedData = dataStr.encode()
 
-    encodedPassword = password.encode()
+    encodedPassword = fpassword.encode()
 
     # salt = os.urandom(16)
     salt = b"1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d"
@@ -274,8 +270,8 @@ def encrypt_file(fname, data, password):
     return
 
 
-def decrypt_file(fname, password):
-    encodedPassword = password.encode()
+def decrypt_file(fname, fpassword):
+    encodedPassword = fpassword.encode()
 
     # salt = os.urandom(16)
     salt = b'1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d'
@@ -301,7 +297,7 @@ def decrypt_file(fname, password):
 def mainfunc():
     parser = argparse.ArgumentParser(description='Retrieve password.')
     parser.add_argument('-f', '--file', type=str, help='file name', required=True)
-    parser.add_argument('-g', '--get-pass', type=str, help='account name')
+    parser.add_argument('-g', '--get-acpass', type=str, help='account name')
     parser.add_argument('-na', '--new-account', type=str, help='new account name')
     parser.add_argument('-print', '--print-to-screen', action='store_true', help='print password to screen', required=False,
                         default=False)
@@ -310,8 +306,8 @@ def mainfunc():
     parser.add_argument('-nf', '--new-file', action='store_true', help='whether or not to create new file')
     parser.add_argument('-e', '--encrypt', action='store_true', help='whether or not file is encrypted')
     parser.add_argument('-a', '--alphabet', type=str, help='full alphabet', required=False)
-    parser.add_argument('-cp', '--change-pass', type=str, help='account to change password of')
-    parser.add_argument('-sp', '--set-pw', type=str, help='set specified password', default=None)
+    parser.add_argument('-cp', '--change-acpass', type=str, help='account to change password of')
+    parser.add_argument('-sp', '--set-acpass', type=str, help='set specified password', default=None)
     args = parser.parse_args()
 
     assert args.file is not None
@@ -325,12 +321,12 @@ def mainfunc():
 
     print(args)
 
-    get_pass_int = int(args.get_pass is not None)
+    get_acpass_int = int(args.get_acpass is not None)
     new_account_int = int(args.new_account is not None)
     delete_account_int = int(args.delete_account is not None)
-    change_pass_int = int(args.change_pass is not None)
+    change_acpass_int = int(args.change_acpass is not None)
     new_file_int = int(args.new_file is True)
-    param_sum = get_pass_int + new_account_int + delete_account_int + change_pass_int + new_file_int
+    param_sum = get_acpass_int + new_account_int + delete_account_int + change_acpass_int + new_file_int
     if param_sum > 1:
         parser.print_help()
         raise RuntimeError("Error. Can only use one of these flags at a time")
@@ -338,31 +334,31 @@ def mainfunc():
         parser.print_help()
         raise RuntimeError("Error. Must use --file and at least one additional flag")
 
-    if args.get_pass is not None:
-        account = Account(fname, args.get_pass, password)
+    if args.get_acpass is not None:
+        account = Account(fname, args.get_acpass, password)
         account.get_password_from_file(args.print_to_screen)
         if args.print_to_screen is False:
-            print("Password for account '{}' in paste buffer".format(args.get_pass))
+            print("Password for account '{}' in paste buffer".format(args.get_acpass))
     elif args.new_account is not None:
         if args.password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
         account = Account(fname, args.new_account, password)
         print("Creating new account with", args.new_account)
         account.create_new_account(ALPHABET, args.password_length)
-        if args.set_pw is not None:
-            account.set_pw(args.set_pw)
+        if args.set_acpass is not None:
+            account.set_acpass(args.set_acpass)
         print("Account created")
     elif args.delete_account is not None:
         account = Account(fname, args.delete_account, password)
         account.delete_account()
         print("Deleted account:", args.delete_account)
-    elif args.change_pass is not None:
-        account = Account(fname, args.change_pass, password)
-        if args.set_pw is None:
-            account.set_pw_rand(ALPHABET, args.password_length)
+    elif args.change_acpass is not None:
+        account = Account(fname, args.change_acpass, password)
+        if args.set_acpass is None:
+            account.set_acpass_rand(ALPHABET, args.password_length)
         else:
-            account.set_pw(args.set_pw)
-        print("Password changed for account:", args.change_pass)
+            account.set_acpass(args.set_acpass)
+        print("Password changed for account:", args.change_acpass)
     elif args.new_file is True:
         create_new_file(fname, password)
         print("New file created:", args.new_file)

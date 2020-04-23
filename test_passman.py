@@ -3,7 +3,6 @@ import unittest
 import pyperclip
 import random
 import os
-import csv
 
 #! TODO: should these be allcaps?
 fname = "test_file.csv"
@@ -185,7 +184,7 @@ class Tests(unittest.TestCase):
         # print_to_screen is False
         account.get_password_from_file(False)
         pw1 = pyperclip.paste()
-        account.set_pw_rand(test_alphabet, password_length)
+        account.set_acpass_rand(test_alphabet, password_length)
         account.get_password_from_file(False)
         pw2 = pyperclip.paste()
         self.assertNotEqual(pw1, pw2)
@@ -196,7 +195,7 @@ class Tests(unittest.TestCase):
         # print_to_screen is False
         account.get_password_from_file(False)
         pw1 = pyperclip.paste()
-        account.set_pw(specified_pass)
+        account.set_acpass(specified_pass)
         account.get_password_from_file(False)
         pw2 = pyperclip.paste()
         self.assertNotEqual(pw1, pw2)
@@ -205,7 +204,7 @@ class Tests(unittest.TestCase):
     def test_change_password_non_existing_rand(self):
         account = self.get_non_existing_account(fname)
         try:
-            account.set_pw_rand(test_alphabet, password_length)
+            account.set_acpass_rand(test_alphabet, password_length)
             self.fail("Did not raise expected error")
         except RuntimeError as err:
             pass
@@ -213,7 +212,7 @@ class Tests(unittest.TestCase):
     def test_change_password_non_existing_specified_pass(self):
         account = self.get_non_existing_account(fname)
         try:
-            account.set_pw(specified_pass)
+            account.set_acpass(specified_pass)
             self.fail("Did not raise expected error")
         except RuntimeError as err:
             pass
