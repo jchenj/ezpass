@@ -4,7 +4,7 @@ import argparse
 import random
 import os.path
 import pickle
-# imports for crypto
+# imports for encryption
 import base64
 import os
 from cryptography.fernet import Fernet
@@ -22,7 +22,7 @@ ENCRYPT = False
 
 class Account:
 
-    def __init__(self, fname, acname, password):
+    def __init__(self, fname, acname, fpassword):
         """
         :param password:
         :param fname: name of file containing accounts & passwords
@@ -32,11 +32,16 @@ class Account:
             raise RuntimeError("Spaces not allowed in account names")
         self.fname = fname
         self.acname = acname
-        self.password = password
+        self.fpassword = fpassword
+        self.acpassword = None
 
     def _readFile(self):
+        """
+        Opens self.fname and loads data for accounts
+        :return: list of Account instances
+        """
         if ENCRYPT:
-            contents = decrypt_file(self.fname, self.password)
+            contents = decrypt_file(self.fname, self.fpassword)
             data = []
             rows = contents.split('\n')
             for r in rows:
@@ -50,8 +55,14 @@ class Account:
         return data
 
     def _writeFile(self, data):
+        """
+        Writes data for accounts to self.fname
+        :param data: list of Account instances
+        :return: None
+        :side effect: updated file
+        """
         if ENCRYPT:
-            encrypt_file(self.fname, data, self.password)
+            encrypt_file(self.fname, data, self.fpassword)
         else:
             with open(self.fname, 'wb') as file:
                 pickle.dump(data, file)
@@ -79,7 +90,7 @@ class Account:
         # read in the password file
         data = self._readFile()
         # write out the password file except the account to delete
-        new_data = [row for row in data if row[0] != self.acname]
+        new_data = [account for account in data if account.acname != self.acname]
         self._writeFile(new_data)
         return
 
@@ -117,9 +128,10 @@ class Account:
             raise RuntimeError("Password cannot be empty")
         # read in the password file
         data = self._readFile()
-        for row in data:
-            if row[0].strip() == self.acname:
-                row[1] = new_password
+        for account in data:
+            #! TODO: is strip() necessary?
+            if account.acname.strip() == self.acname:
+                account.acpassword = new_password
         self._writeFile(data)
         return
 
@@ -131,9 +143,8 @@ class Account:
         password_header = 'Password'
 
         data = self._readFile()
-        print(data)
-        for row in data:
-            if row[0].strip() == self.acname:
+        for account in data:
+            if account.acname.strip() == self.acname:
                 return True
         return False
 
@@ -147,9 +158,9 @@ class Account:
         """
 
         data = self._readFile()
-        for row in data:
-            if row[0].strip() == self.acname:
-                password = row[1].strip()
+        for account in data:
+            if account.acname.strip() == self.acname:
+                password = account.acpassword.strip()
                 if password == "":
                     print("Password field is empty for account '{}'".format(self.acname))
                     # ! TODO: what needed to put here so 'pw in print buffer' message from mainfunc doesn't print?
@@ -172,13 +183,12 @@ class Account:
         assert (password_length > 0)
         if self.check_if_account_exists():
             raise RuntimeError("Account '{}' already exists".format(self.acname))
-        new_pass = create_password(alphabet, password_length)
+        self.acpassword = create_password(alphabet, password_length)
         # !TODO: disc - moved line below to mainfunc() - needed to remove new_pass param
         # !TODO: would it be helpful/important to print password to screen? Thinking not
         # print("Creating new account with", account, new_pass)
         data = self._readFile()
-        fields = [self.acname, new_pass]
-        data.append(fields)
+        data.append(self)
         self._writeFile(data)
         return
 
