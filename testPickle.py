@@ -30,9 +30,5 @@ print(unserial[0].__dict__)
 # print(account1.__dict__ == unserial.__dict__)
 
 
-
-#
-
-
 # for account in aclist:
 #     pickle.dump(account, file)

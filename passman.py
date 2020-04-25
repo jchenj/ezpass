@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
 # ENCRYPT is set as global variable in __main__ func. Also set here because it's needed for testing
-ENCRYPT = False
+ENCRYPT = True
 
 
 class Account:
@@ -34,17 +34,20 @@ class Account:
         self.fpassword = fpassword
         self.acpassword = None
 
+#! TODO: check Encrypt version
     def _readFile(self):
         """
         Opens self.fname and loads data for accounts
         :return: list of Account instances
         """
         if ENCRYPT:
-            contents = decrypt_file(self.fname, self.fpassword)
-            data = []
-            rows = contents.split('\n')
-            for r in rows:
-                data.append(r.split(','))
+            decryptedMessage = decrypt_file(self.fname, self.fpassword)
+            data = pickle.loads(decryptedMessage)
+
+            # data = []
+            # rows = contents.split('\n')
+            # for r in rows:
+            #     data.append(r.split(','))
         else:
             # with open(self.fname, "r", encoding='utf-8-sig') as file:
             #     data = list(csv.reader(file))
@@ -200,10 +203,9 @@ def create_new_file(fname, password):
     # ! TODO: figure out best way to ensure that filename is desired format (e.g. .csv) catch error or append ending?
     if os.path.isfile(fname):
         raise RuntimeError("File '{}' already exists".format(fname))
-    fieldnames = ['Account-name', 'Password']
     if ENCRYPT:
-        # make fieldnames list of lists to match data in ecrypt file
-        encrypt_file(fname, [fieldnames], password)
+        # make fieldnames list of lists to match data in encrypt file
+        encrypt_file(fname, [], password)
     else:
         # with open(fname, 'w', newline='') as csvfile:
         #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -239,16 +241,20 @@ def create_password(alphabet, length):
         password = password + letter
     return password
 
-
+#! TODO: check new version - a problem with encding bytes object.
 def encrypt_file(fname, data, fpassword):
-    # Takes data - plain text in memory
-    # Transform data into a string
-    dataStr = ''
-    for elem in data:
-        row = (','.join(elem))
-        dataStr = dataStr + row + '\n'
-    # Alternatively, with list comprehension: dataStr = '\n'.join(','.join(row) for row in data)
-    encodedData = dataStr.encode()
+    # Pickle data (list of Account instances)
+    pickledData = pickle.dumps(data)
+    # encodedPickledData = pickledData.encode()
+
+    # # Takes data - plain text in memory
+    # # Transform data into a string
+    # dataStr = ''
+    # for elem in data:
+    #     row = (','.join(elem))
+    #     dataStr = dataStr + row + '\n'
+    # # Alternatively, with list comprehension: dataStr = '\n'.join(','.join(row) for row in data)
+    # encodedData = dataStr.encode()
 
     encodedPassword = fpassword.encode()
 
@@ -263,7 +269,7 @@ def encrypt_file(fname, data, fpassword):
     )
     key = base64.urlsafe_b64encode(kdf.derive(encodedPassword))
     f = Fernet(key)
-    cipher_text = f.encrypt(encodedData)
+    cipher_text = f.encrypt(pickledData)
 
     with open(fname, "wb") as enc_file:
         enc_file.write(cipher_text)
@@ -290,8 +296,8 @@ def decrypt_file(fname, fpassword):
 
     enc_cipher_text = cipher_text.encode()
     message = f.decrypt(enc_cipher_text)
-    str_message = message.decode()
-    return str_message
+    # decrypted_message = message.decode()
+    return message
 
 
 def mainfunc():
