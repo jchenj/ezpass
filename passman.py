@@ -19,13 +19,50 @@ ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 ENCRYPT = True
 
 
+class PwFile:
+
+    def __init__(self, fname, fpass, encrypt):
+        """
+        :param fname: name of file (str)
+        :param fpass: password for file fname (str)
+        :param encrypt: whether or not file is encrypted (bool)
+        """
+        if " " in self.acname:
+            raise RuntimeError("Spaces not allowed in account names")
+        self.fname = fname
+        self.fpass = fpass
+        self.encrypt = encrypt
+
+    def _decryptFile(self):
+        pass
+
+    def _readFile(self):
+        pass
+
+    def _encryptFile(self):
+        pass
+
+    def _writeFile(self):
+        pass
+
+    def get_fname(self):
+        return self.fname
+
+    def create_new_file(self):
+        pass
+
+
+
+
+
+
 class Account:
 
     def __init__(self, fname, acname, fpassword):
         """
-        :param password:
         :param fname: name of file containing accounts & passwords
         :param acname: account name (cannot contain spaces, newlines or tabs)
+        :param fpassword: password for file fname
         """
         if " " in acname:
             raise RuntimeError("Spaces not allowed in account names")
