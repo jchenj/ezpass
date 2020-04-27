@@ -27,37 +27,38 @@ class PwFile:
         :param fpass: password for file fname (str)
         :param encrypt: whether or not file is encrypted (bool)
         """
-        if " " in self.acname:
-            raise RuntimeError("Spaces not allowed in account names")
+        #! TODO: add check if file named fname does not exist, error
         self.fname = fname
         self.fpass = fpass
         self.encrypt = encrypt
 
+    #! TODO: look at Py type annotation for all funcs
     def _decryptFile(self):
-        pass
-
-    def _readFile(self):
         pass
 
     def _encryptFile(self):
         pass
 
-    def _writeFile(self):
+    def readFile(self):
+        pass
+
+    def writeFile(self):
         pass
 
     def get_fname(self):
         return self.fname
 
-    def create_new_file(self):
+    #! TODO: look up static method
+    @staticmethod
+    def create_new_file():
         pass
 
-
-
+    #! TODO: sketch out usage & put into main
 
 
 
 class Account:
-
+    #! TODO add pw instance as parameter to Account
     def __init__(self, fname, acname, fpassword):
         """
         :param fname: name of file containing accounts & passwords
