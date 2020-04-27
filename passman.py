@@ -21,41 +21,47 @@ ENCRYPT = True
 
 class PwFile:
 
-    def __init__(self, fname, fpass, encrypt):
+    def __init__(self, fname: str, fpass: str, encrypt: bool) -> None:
         """
         :param fname: name of file (str)
         :param fpass: password for file fname (str)
         :param encrypt: whether or not file is encrypted (bool)
         """
-        #! TODO: add check if file named fname does not exist, error
+        if not os.path.isfile(fname):
+            raise RuntimeError("File '{}' does not exist".format(fname))
         self.fname = fname
         self.fpass = fpass
         self.encrypt = encrypt
 
     #! TODO: look at Py type annotation for all funcs
-    def _decryptFile(self):
+    def _decryptFile(self) -> str:
         pass
 
-    def _encryptFile(self):
+    def _encryptFile(self, data: Aclist) -> None:
         pass
 
-    def readFile(self):
+    def readFile(self) -> Aclist:
         pass
 
-    def writeFile(self):
+    def writeFile(self, data: Aclist) -> None:
         pass
 
-    def get_fname(self):
+    def get_fname(self) -> str:
         return self.fname
+
+    def get_fpass(self) -> str:
+        pass
+
+    def change_fpass(self) -> None:
+        pass
 
     #! TODO: look up static method
     @staticmethod
     def create_new_file():
         pass
 
-    #! TODO: sketch out usage & put into main
 
-
+#! TODO next - add PWfile instance as param to account, start moving funcs up to PwList
 
 class Account:
     #! TODO add pw instance as parameter to Account
@@ -279,7 +285,6 @@ def create_password(alphabet, length):
         password = password + letter
     return password
 
-#! TODO: check new version - a problem with encding bytes object.
 def encrypt_file(fname, data, fpassword):
     # Pickle data (list of Account instances)
     pickledData = pickle.dumps(data)
