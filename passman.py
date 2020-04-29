@@ -153,7 +153,7 @@ class PwFile:
                 pickle.dump(data, file)
         return
 
-#! TODO next - add PWfile instance as param to account, start moving funcs up to PwList
+#! TODO next - add PWfile instance as param to account
 #! TODO - rename class to AcList?
 #! TODO - take acname out of class?
 
@@ -170,6 +170,7 @@ class Account:
         self.acpassword = None
 
 #! TODO: check Encrypt version
+    # moved
     def _readFile(self):
         """
         Opens self.fname and loads data for accounts
@@ -191,6 +192,7 @@ class Account:
 
         return data
 
+    # moved
     def _writeFile(self, data):
         """
         Writes data for accounts to self.fname
@@ -209,12 +211,14 @@ class Account:
             #         writer.writerow(row)
         return
 
+    # moved
     def get_fname(self):
         return self.fname
 
     def get_acname(self):
         return self.acname
 
+    #! TODO: check - do I need to include self.acname in signature?
     def delete_account(self):
         """
         Deletes the specified account name and password
@@ -225,12 +229,13 @@ class Account:
         if not self.check_if_account_exists():
             raise RuntimeError("Account '{}' does not exist".format(self.acname))
         # read in the password file
-        data = self._readFile()
+        data = PwFile.readFile()
         # write out the password file except the account to delete
         new_data = [account for account in data if account.acname != self.acname]
-        self._writeFile(new_data)
+        PwFile.writeFile(new_data)
         return
 
+    #! TODO: check return
     def set_acpass_rand(self, alphabet, password_length):
         """
         Sets password of account to a new random password of specified length from ALPHABET
@@ -240,8 +245,9 @@ class Account:
         :return new_password: string
         """
         new_password = create_password(alphabet, password_length)
-        self._change_password(new_password)
+        return self._change_password(new_password)
 
+    #! TODO: check return
     def set_acpass(self, specified_pass):
         """
         Sets password of specified account to a new specified password
@@ -249,7 +255,7 @@ class Account:
         :param specified_pass: specified new password (string)
         :return: new_password: string
         """
-        self._change_password(specified_pass)
+        return self._change_password(specified_pass)
 
     def _change_password(self, new_password):
         """
@@ -264,19 +270,19 @@ class Account:
         if new_password == "":
             raise RuntimeError("Password cannot be empty")
         # read in the password file
-        data = self._readFile()
+        data = PwFile.readFile()
         for account in data:
             #! TODO: is strip() necessary?
             if account.acname.strip() == self.acname:
                 account.acpassword = new_password
-        self._writeFile(data)
+        PwFile.writeFile(data)
         return
 
     def check_if_account_exists(self):
         """
         If account exists in file, returns True. If account doesn't exist in file, returns False.
         """
-        data = self._readFile()
+        data = PwFile.readFile()
         for account in data:
             if account.acname.strip() == self.acname:
                 return True
@@ -290,8 +296,7 @@ class Account:
         :return: None
         :side effect: password in paste buffer (default) or printed to screen (if optional parameter used)
         """
-
-        data = self._readFile()
+        data = PwFile.readFile()
         for account in data:
             if account.acname.strip() == self.acname:
                 password = account.acpassword.strip()
@@ -321,12 +326,13 @@ class Account:
         # !TODO: disc - moved line below to mainfunc() - needed to remove new_pass param
         # !TODO: would it be helpful/important to print password to screen? Thinking not
         # print("Creating new account with", account, new_pass)
-        data = self._readFile()
+        data = PwFile.readFile()
+        #! TODO: is append working correctly?
         data.append(self)
-        self._writeFile(data)
+        PwFile.writeFile(data)
         return
 
-
+# moved
 def create_new_file(fname, password):
     """
     Given a file name, creates a new .csv file with that name, and with header columns Account and Password
@@ -376,6 +382,7 @@ def create_password(alphabet, length):
         password = password + letter
     return password
 
+#moved
 def encrypt_file(fname, data, fpassword):
     # Pickle data (list of Account instances)
     pickledData = pickle.dumps(data)
@@ -409,7 +416,7 @@ def encrypt_file(fname, data, fpassword):
         enc_file.write(cipher_text)
     return
 
-
+# moved
 def decrypt_file(fname, fpassword):
     encodedPassword = fpassword.encode()
 
