@@ -33,7 +33,7 @@ class PwFile:
         self.fpass = fpass
         self.encrypt = encrypt
 
-    def _encryptFile(self, data: AcList) -> None:
+    def _encryptFile(self, data: Account) -> None:
         # Pickle data (list of Account instances)
         pickledData = pickle.dumps(data)
         encodedPassword = self.fpass.encode()
@@ -77,7 +77,7 @@ class PwFile:
         message = f.decrypt(enc_cipher_text)
         return message
 
-    def readFile(self) -> AcList:
+    def readFile(self) -> Account:
         """
         Opens self.fname and loads data for accounts
         :return: list of Account instances
@@ -91,7 +91,7 @@ class PwFile:
 
         return data
 
-    def writeFile(self, data: AcList) -> None:
+    def writeFile(self, data: Account) -> None:
         """
         Writes data for accounts to PwFile.fname
         :param data: list of Account instances
