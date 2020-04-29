@@ -127,7 +127,7 @@ class PwFile:
         return
 
     @staticmethod
-    def create_new_file(fname, fpass, encrypt):
+    def create_new_file(fname: str, fpass: str, encrypt: bool) -> None:
         """
         Given a file name, password and encryption value, creates a new file with those values and an empty
         list for storing accounts
@@ -158,7 +158,7 @@ class PwFile:
 #! TODO - take acname out of class?
 
 class Account:
-    def __init__(self, pwfile, acname):
+    def __init__(self, pwfile: PwFile, acname: str) -> None:
         """
         :param pwfile: PwFile instance
         :param acname: account name (cannot contain spaces, newlines or tabs)
@@ -193,7 +193,7 @@ class Account:
         return data
 
     # moved
-    def _writeFile(self, data):
+    def _writeFile(self, data: list):
         """
         Writes data for accounts to self.fname
         :param data: list of Account instances
@@ -236,7 +236,7 @@ class Account:
         return
 
     #! TODO: check return
-    def set_acpass_rand(self, alphabet, password_length):
+    def set_acpass_rand(self, alphabet: str, password_length: int) -> str:
         """
         Sets password of account to a new random password of specified length from ALPHABET
         Assumes password length is integer > 0
@@ -248,7 +248,7 @@ class Account:
         return self._change_password(new_password)
 
     #! TODO: check return
-    def set_acpass(self, specified_pass):
+    def set_acpass(self, specified_pass: int) -> str:
         """
         Sets password of specified account to a new specified password
         Assumes account names exists in file
@@ -257,7 +257,7 @@ class Account:
         """
         return self._change_password(specified_pass)
 
-    def _change_password(self, new_password):
+    def _change_password(self, new_password: str) -> None:
         """
         Changes password of specified account to new (pre-set) password
         Assumes account name exists in file
@@ -278,7 +278,7 @@ class Account:
         PwFile.writeFile(data)
         return
 
-    def check_if_account_exists(self):
+    def check_if_account_exists(self) -> bool:
         """
         If account exists in file, returns True. If account doesn't exist in file, returns False.
         """
@@ -288,7 +288,7 @@ class Account:
                 return True
         return False
 
-    def get_password_from_file(self, print_to_screen):
+    def get_password_from_file(self, print_to_screen: bool) -> None:
         """
         Given valid account name in file, puts password for account in paste buffer.
         If optional '--print_to_screen' parameter entered, then password printed to screen instead of put in paste buffer.
@@ -311,7 +311,7 @@ class Account:
                 return
         raise RuntimeError("Account '{}' not in file".format(self.acname))
 
-    def create_new_account(self, alphabet, password_length):
+    def create_new_account(self, alphabet: str, password_length: bool) -> None:
         """
         For an account name that does not already exist in the file, appends the account name and password to the file
         :param alphabet: string of the full alphabet
@@ -333,7 +333,7 @@ class Account:
         return
 
 # moved
-def create_new_file(fname, password):
+def create_new_file(fname: str, password: str):
     """
     Given a file name, creates a new .csv file with that name, and with header columns Account and Password
     Assumes that the file name doesn't already exist in the current directory
@@ -357,7 +357,7 @@ def create_new_file(fname, password):
     return
 
 
-def generate_random_letter(alphabet):
+def generate_random_letter(alphabet: str) -> str:
     """
     Generates random letter from alphabet
     :param alphabet: string representing full alphabet
@@ -368,7 +368,7 @@ def generate_random_letter(alphabet):
     return letter
 
 
-def create_password(alphabet, length):
+def create_password(alphabet: str, length: int) -> str:
     """
     Creates a password of specified length using letters from ALPHABET
     :param alphabet: string representing full alphabet
