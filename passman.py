@@ -33,49 +33,140 @@ class PwFile:
         self.fpass = fpass
         self.encrypt = encrypt
 
-    #! TODO: look at Py type annotation for all funcs
+    def _encryptFile(self, data: AcList) -> None:
+        # Pickle data (list of Account instances)
+        pickledData = pickle.dumps(data)
+        encodedPassword = self.fpass.encode()
+
+        # salt = os.urandom(16)
+        salt = b"1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d"
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend()
+        )
+        key = base64.urlsafe_b64encode(kdf.derive(encodedPassword))
+        f = Fernet(key)
+        cipher_text = f.encrypt(pickledData)
+
+        with open(self.fname, "wb") as enc_file:
+            enc_file.write(cipher_text)
+        return
+
     def _decryptFile(self) -> str:
-        pass
+        encodedPassword = fpassword.encode()
 
-    def _encryptFile(self, data: Aclist) -> None:
-        pass
+        # salt = os.urandom(16)
+        salt = b'1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d'
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend()
+        )
+        key = base64.urlsafe_b64encode(kdf.derive(encodedPassword))
+        f = Fernet(key)
 
-    def readFile(self) -> Aclist:
-        pass
+        with open(fname, "r") as enc_file:
+            cipher_text = enc_file.read()
 
-    def writeFile(self, data: Aclist) -> None:
-        pass
+        enc_cipher_text = cipher_text.encode()
+        message = f.decrypt(enc_cipher_text)
+        return message
+
+    def readFile(self) -> AcList:
+        """
+        Opens self.fname and loads data for accounts
+        :return: list of Account instances
+        """
+        if ENCRYPT:
+            decryptedMessage = decrypt_file(self.fname, self.fpass)
+            data = pickle.loads(decryptedMessage)
+        else:
+            with open(self.fname, 'rb') as file:
+                data = pickle.load(file)
+
+        return data
+
+    def writeFile(self, data: AcList) -> None:
+        """
+        Writes data for accounts to PwFile.fname
+        :param data: list of Account instances
+        :return: None
+        :side effect: updated file
+        """
+        if ENCRYPT:
+            encrypt_file(self.fname, data, self.fpass)
+        else:
+            with open(self.fname, 'wb') as file:
+                pickle.dump(data, file)
+        return
 
     def get_fname(self) -> str:
         return self.fname
 
     def get_fpass(self) -> str:
-        pass
+        return self.fpass
 
-    def change_fpass(self) -> None:
-        pass
+    #! TODO: is it correct to have initial check?
+    def change_fpass(self, new_password: str) -> None:
+        """
+        Changes password for file
+        :param new_password: new password for file
+        :return: None
+        :side effect: file updated with new password
+        """
+        if not self.fpass():
+            raise RuntimeError("Password for file '{}' does not exist".format(self.fname))
+        if new_password == "":
+            raise RuntimeError("Password cannot be empty")
+        self.fpass = new_password
+        return
 
-    #! TODO: look up static method
     @staticmethod
-    def create_new_file():
-        pass
-
+    def create_new_file(fname, fpass, encrypt):
+        """
+        Given a file name, password and encryption value, creates a new file with those values and an empty
+        list for storing accounts
+        Assumes that the file name doesn't already exist in the current directory
+        :return: none
+        :side effect: new file with specified file name, password and encryption value
+        """
+        # ! TODO: add an option to overwrite file or enter new fname
+        # ! TODO: what's best  way to ensure that file is desired format?
+        # !  TODO: Check this func
+        if os.path.isfile(fname):
+            raise RuntimeError("File '{}' already exists".format(fname))
+        if ENCRYPT:
+            # make fieldnames list of lists to match data in encrypt file
+            encrypt_file(fname, [], fpass)
+        else:
+            new_file = PwFile()
+            new_file.fname = fname
+            new_file.fpass = fpass
+            new_file.encrypt = encrypt
+            data = []
+            with open(fname, 'wb') as file:
+                pickle.dump(data, file)
+        return
 
 #! TODO next - add PWfile instance as param to account, start moving funcs up to PwList
+#! TODO - rename class to AcList?
+#! TODO - take acname out of class?
 
 class Account:
-    #! TODO add pw instance as parameter to Account
-    def __init__(self, fname, acname, fpassword):
+    def __init__(self, pwfile, acname):
         """
-        :param fname: name of file containing accounts & passwords
+        :param pwfile: PwFile instance
         :param acname: account name (cannot contain spaces, newlines or tabs)
-        :param fpassword: password for file fname
         """
         if " " in acname:
             raise RuntimeError("Spaces not allowed in account names")
-        self.fname = fname
+        self.pwfile = pwfile
         self.acname = acname
-        self.fpassword = fpassword
         self.acpassword = None
 
 #! TODO: check Encrypt version
