@@ -11,7 +11,7 @@ FILE_PASSWORD = "hello"
 test_alphabet = passman.ALPHABET
 password_length = 2 * len(passman.ALPHABET)
 specified_pass = "myn3wpass"
-
+passfile = None
 
 class Tests(unittest.TestCase):
     @classmethod
@@ -26,7 +26,7 @@ class Tests(unittest.TestCase):
         # check if file 'fname' already exists each time before test runs. If it does, delete it.
         if os.path.isfile(fname):
             os.remove(fname)
-        passman.create_new_file(fname, FILE_PASSWORD)
+        passfile = passman.PwFile.create_new_file(fname, FILE_PASSWORD, True)
         ac1 = passman.Account(fname, "bird", FILE_PASSWORD)
         ac1.create_new_account(test_alphabet, 8)
         ac2 = passman.Account(fname, "fish", FILE_PASSWORD)

@@ -15,10 +15,6 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
-# ENCRYPT is set as global variable in __main__ func. Also set here because it's needed for testing
-ENCRYPT = True
-
-
 class PwFile:
 
     def __init__(self, fname: str, fpass: str, encrypt: bool) -> None:
@@ -137,10 +133,11 @@ class PwFile:
         """
         # ! TODO: add an option to overwrite file or enter new fname
         # ! TODO: what's best  way to ensure that file is desired format?
-        # !  TODO: Check this func
+        # ! TODO: Check this func
         if os.path.isfile(fname):
             raise RuntimeError("File '{}' already exists".format(fname))
-
+        fd = os.open(fname, os.O_CREAT)
+        os.close(fd)
         new_file = PwFile(fname, fpass, encrypt)
         new_file.writeFile([])
         return
@@ -317,8 +314,7 @@ def mainfunc():
 
     assert args.file is not None
     fname = args.file
-    global ENCRYPT
-    ENCRYPT = args.encrypt
+
     if args.encrypt:
         password = input("Enter password for file {}: ".format(fname))
     else:
@@ -340,11 +336,11 @@ def mainfunc():
         raise RuntimeError("Error. Must use --file and at least one additional flag")
 
     if args.new_file is True:
-        PwFile.create_new_file(fname, password, ENCRYPT)
+        PwFile.create_new_file(fname, password, args.encrypt)
         print("New file created:", fname)
         return
 
-    pw = PwFile(fname, password, ENCRYPT)
+    pw = PwFile(fname, password, args.encrypt)
 
     if args.get_acpass is not None:
         account = Account(pw, args.get_acpass)
