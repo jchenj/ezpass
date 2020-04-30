@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
+
 class PwFile:
 
     def __init__(self, fname: str, fpass: str, encrypt: bool) -> None:
