@@ -26,12 +26,12 @@ class Tests(unittest.TestCase):
         # check if file 'fname' already exists each time before test runs. If it does, delete it.
         if os.path.isfile(fname):
             os.remove(fname)
-        passfile = passman.PwFile.create_new_file(fname, FILE_PASSWORD, True)
-        ac1 = passman.Account(fname, "bird", FILE_PASSWORD)
+        pwfile = passman.PwFile.create_new_file(fname, FILE_PASSWORD, True)
+        ac1 = passman.Account(pwfile, "bird")
         ac1.create_new_account(test_alphabet, 8)
-        ac2 = passman.Account(fname, "fish", FILE_PASSWORD)
+        ac2 = passman.Account(pwfile, "fish")
         ac2.create_new_account(test_alphabet, 8)
-        ac3 = passman.Account(fname, "dog", FILE_PASSWORD)
+        ac3 = passman.Account(pwfile, "dog")
         ac3.create_new_account(test_alphabet, 8)
         print("Tests setUp: end")
 
@@ -82,7 +82,8 @@ class Tests(unittest.TestCase):
         :return: Account instance
         """
         random_account = self.create_random_account()
-        account = passman.Account(fname, random_account, FILE_PASSWORD)
+        pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
+        account = passman.Account(pwfile, random_account)
         if account.check_if_account_exists():
             return self.get_non_existing_account(fname)
         else:
@@ -106,10 +107,10 @@ class Tests(unittest.TestCase):
             self.assertIn(letter, passman.ALPHABET)
 
     def test_check_if_account_exists_existing_acct(self):
-        account = passman.Account(fname, 'bird', FILE_PASSWORD)
+        pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
+        account = passman.Account(pwfile, 'bird')
         ret = account.check_if_account_exists()
         self.assertEqual(ret, True)
-
 
     def test_check_if_account_exists_non_existing_acct(self):
         account = self.get_non_existing_account(fname)
@@ -146,8 +147,10 @@ class Tests(unittest.TestCase):
 
     # not testing get_password_from_file() with print_to_screen option for valid or invalid accounts
 
+    #! TODO: confirm - do I have to remake pwfile each time?
     def test_create_new_account_existing_acct(self):
-        account = passman.Account(fname, "fish", FILE_PASSWORD)
+        pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
+        account = passman.Account(pwfile, "fish")
         try:
             account.create_new_account(test_alphabet, password_length)
             self.fail("Did not raise expected exception")

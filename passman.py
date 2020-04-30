@@ -96,7 +96,7 @@ class PwFile:
         :side effect: updated file
         """
         if self.encrypt:
-            self.encrypt_file(self.fname, data, self.fpass)
+            self._encryptFile(data)
         else:
             with open(self.fname, 'wb') as file:
                 pickle.dump(data, file)
