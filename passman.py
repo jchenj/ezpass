@@ -33,7 +33,7 @@ class PwFile:
         self.fpass = fpass
         self.encrypt = encrypt
 
-    def _encryptFile(self, data: Account) -> None:
+    def _encryptFile(self, data: list) -> None:
         # Pickle data (list of Account instances)
         pickledData = pickle.dumps(data)
         encodedPassword = self.fpass.encode()
@@ -56,7 +56,7 @@ class PwFile:
         return
 
     def _decryptFile(self) -> str:
-        encodedPassword = fpassword.encode()
+        encodedPassword = self.fpass.encode()
 
         # salt = os.urandom(16)
         salt = b'1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d'
@@ -70,20 +70,20 @@ class PwFile:
         key = base64.urlsafe_b64encode(kdf.derive(encodedPassword))
         f = Fernet(key)
 
-        with open(fname, "r") as enc_file:
+        with open(self.fname, "r") as enc_file:
             cipher_text = enc_file.read()
 
         enc_cipher_text = cipher_text.encode()
         message = f.decrypt(enc_cipher_text)
         return message
 
-    def readFile(self) -> Account:
+    def readFile(self) -> list:
         """
         Opens self.fname and loads data for accounts
         :return: list of Account instances
         """
-        if ENCRYPT:
-            decryptedMessage = decrypt_file(self.fname, self.fpass)
+        if self.encrypt:
+            decryptedMessage = self.decrypt_file(self.fname, self.fpass)
             data = pickle.loads(decryptedMessage)
         else:
             with open(self.fname, 'rb') as file:
@@ -91,15 +91,15 @@ class PwFile:
 
         return data
 
-    def writeFile(self, data: Account) -> None:
+    def writeFile(self, data: list) -> None:
         """
         Writes data for accounts to PwFile.fname
         :param data: list of Account instances
         :return: None
         :side effect: updated file
         """
-        if ENCRYPT:
-            encrypt_file(self.fname, data, self.fpass)
+        if self.encrypt:
+            self.encrypt_file(self.fname, data, self.fpass)
         else:
             with open(self.fname, 'wb') as file:
                 pickle.dump(data, file)
@@ -140,22 +140,15 @@ class PwFile:
         # !  TODO: Check this func
         if os.path.isfile(fname):
             raise RuntimeError("File '{}' already exists".format(fname))
-        if ENCRYPT:
-            # make fieldnames list of lists to match data in encrypt file
-            encrypt_file(fname, [], fpass)
-        else:
-            new_file = PwFile()
-            new_file.fname = fname
-            new_file.fpass = fpass
-            new_file.encrypt = encrypt
-            data = []
-            with open(fname, 'wb') as file:
-                pickle.dump(data, file)
+
+        new_file = PwFile(fname, fpass, encrypt)
+        new_file.writeFile([])
         return
 
 #! TODO next - add PWfile instance as param to account
 #! TODO - rename class to AcList?
 #! TODO - take acname out of class?
+
 
 class Account:
     def __init__(self, pwfile: PwFile, acname: str) -> None:
@@ -168,52 +161,6 @@ class Account:
         self.pwfile = pwfile
         self.acname = acname
         self.acpassword = None
-
-#! TODO: check Encrypt version
-    # moved
-    def _readFile(self):
-        """
-        Opens self.fname and loads data for accounts
-        :return: list of Account instances
-        """
-        if ENCRYPT:
-            decryptedMessage = decrypt_file(self.fname, self.fpassword)
-            data = pickle.loads(decryptedMessage)
-
-            # data = []
-            # rows = contents.split('\n')
-            # for r in rows:
-            #     data.append(r.split(','))
-        else:
-            # with open(self.fname, "r", encoding='utf-8-sig') as file:
-            #     data = list(csv.reader(file))
-            with open(self.fname, 'rb') as file:
-                data = pickle.load(file)
-
-        return data
-
-    # moved
-    def _writeFile(self, data: list):
-        """
-        Writes data for accounts to self.fname
-        :param data: list of Account instances
-        :return: None
-        :side effect: updated file
-        """
-        if ENCRYPT:
-            encrypt_file(self.fname, data, self.fpassword)
-        else:
-            with open(self.fname, 'wb') as file:
-                pickle.dump(data, file)
-            # with open(self.fname, "w") as file:
-            #     writer = csv.writer(file)
-            #     for row in data:
-            #         writer.writerow(row)
-        return
-
-    # moved
-    def get_fname(self):
-        return self.fname
 
     def get_acname(self):
         return self.acname
@@ -229,14 +176,13 @@ class Account:
         if not self.check_if_account_exists():
             raise RuntimeError("Account '{}' does not exist".format(self.acname))
         # read in the password file
-        data = PwFile.readFile()
+        data = self.pwfile.readFile()
         # write out the password file except the account to delete
         new_data = [account for account in data if account.acname != self.acname]
-        PwFile.writeFile(new_data)
+        self.pwfile.writeFile(new_data)
         return
 
-    #! TODO: check return
-    def set_acpass_rand(self, alphabet: str, password_length: int) -> str:
+    def set_acpass_rand(self, alphabet: str, password_length: int) -> None:
         """
         Sets password of account to a new random password of specified length from ALPHABET
         Assumes password length is integer > 0
@@ -247,8 +193,7 @@ class Account:
         new_password = create_password(alphabet, password_length)
         return self._change_password(new_password)
 
-    #! TODO: check return
-    def set_acpass(self, specified_pass: int) -> str:
+    def set_acpass(self, specified_pass: int) -> None:
         """
         Sets password of specified account to a new specified password
         Assumes account names exists in file
@@ -270,19 +215,19 @@ class Account:
         if new_password == "":
             raise RuntimeError("Password cannot be empty")
         # read in the password file
-        data = PwFile.readFile()
+        data = self.pwfile.readFile()
         for account in data:
             #! TODO: is strip() necessary?
             if account.acname.strip() == self.acname:
                 account.acpassword = new_password
-        PwFile.writeFile(data)
+        self.pwfile.writeFile(data)
         return
 
     def check_if_account_exists(self) -> bool:
         """
         If account exists in file, returns True. If account doesn't exist in file, returns False.
         """
-        data = PwFile.readFile()
+        data = self.pwfile.readFile()
         for account in data:
             if account.acname.strip() == self.acname:
                 return True
@@ -296,7 +241,7 @@ class Account:
         :return: None
         :side effect: password in paste buffer (default) or printed to screen (if optional parameter used)
         """
-        data = PwFile.readFile()
+        data = self.pwfile.readFile()
         for account in data:
             if account.acname.strip() == self.acname:
                 password = account.acpassword.strip()
@@ -323,38 +268,10 @@ class Account:
         if self.check_if_account_exists():
             raise RuntimeError("Account '{}' already exists".format(self.acname))
         self.acpassword = create_password(alphabet, password_length)
-        # !TODO: disc - moved line below to mainfunc() - needed to remove new_pass param
-        # !TODO: would it be helpful/important to print password to screen? Thinking not
-        # print("Creating new account with", account, new_pass)
-        data = PwFile.readFile()
-        #! TODO: is append working correctly?
+        data = self.pwfile.readFile()
         data.append(self)
-        PwFile.writeFile(data)
+        self.pwfile.writeFile(data)
         return
-
-# moved
-def create_new_file(fname: str, password: str):
-    """
-    Given a file name, creates a new .csv file with that name, and with header columns Account and Password
-    Assumes that the file name doesn't already exist in the current directory
-    :return: none
-    :side effect: .csv file with specified file name, and with header columns Account and Password
-    """
-    # ! TODO: add an option to overwrite file or enter new fname
-    # ! TODO: figure out best way to ensure that filename is desired format (e.g. .csv) catch error or append ending?
-    if os.path.isfile(fname):
-        raise RuntimeError("File '{}' already exists".format(fname))
-    if ENCRYPT:
-        # make fieldnames list of lists to match data in encrypt file
-        encrypt_file(fname, [], password)
-    else:
-        # with open(fname, 'w', newline='') as csvfile:
-        #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        #     writer.writeheader()
-        data = []
-        with open(fname, 'wb') as file:
-            pickle.dump(data, file)
-    return
 
 
 def generate_random_letter(alphabet: str) -> str:
@@ -381,65 +298,6 @@ def create_password(alphabet: str, length: int) -> str:
         letter = generate_random_letter(alphabet)
         password = password + letter
     return password
-
-#moved
-def encrypt_file(fname, data, fpassword):
-    # Pickle data (list of Account instances)
-    pickledData = pickle.dumps(data)
-    # encodedPickledData = pickledData.encode()
-
-    # # Takes data - plain text in memory
-    # # Transform data into a string
-    # dataStr = ''
-    # for elem in data:
-    #     row = (','.join(elem))
-    #     dataStr = dataStr + row + '\n'
-    # # Alternatively, with list comprehension: dataStr = '\n'.join(','.join(row) for row in data)
-    # encodedData = dataStr.encode()
-
-    encodedPassword = fpassword.encode()
-
-    # salt = os.urandom(16)
-    salt = b"1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d"
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=100000,
-        backend=default_backend()
-    )
-    key = base64.urlsafe_b64encode(kdf.derive(encodedPassword))
-    f = Fernet(key)
-    cipher_text = f.encrypt(pickledData)
-
-    with open(fname, "wb") as enc_file:
-        enc_file.write(cipher_text)
-    return
-
-# moved
-def decrypt_file(fname, fpassword):
-    encodedPassword = fpassword.encode()
-
-    # salt = os.urandom(16)
-    salt = b'1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d'
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=100000,
-        backend=default_backend()
-    )
-    key = base64.urlsafe_b64encode(kdf.derive(encodedPassword))
-    f = Fernet(key)
-
-    with open(fname, "r") as enc_file:
-        cipher_text = enc_file.read()
-
-    enc_cipher_text = cipher_text.encode()
-    message = f.decrypt(enc_cipher_text)
-    # decrypted_message = message.decode()
-    return message
-
 
 def mainfunc():
     parser = argparse.ArgumentParser(description='Retrieve password.')
@@ -481,34 +339,38 @@ def mainfunc():
         parser.print_help()
         raise RuntimeError("Error. Must use --file and at least one additional flag")
 
+    if args.new_file is True:
+        PwFile.create_new_file(fname, password, ENCRYPT)
+        print("New file created:", fname)
+        return
+
+    pw = PwFile(fname, password, ENCRYPT)
+
     if args.get_acpass is not None:
-        account = Account(fname, args.get_acpass, password)
+        account = Account(pw, args.get_acpass)
         account.get_password_from_file(args.print_to_screen)
         if args.print_to_screen is False:
             print("Password for account '{}' in paste buffer".format(args.get_acpass))
     elif args.new_account is not None:
         if args.password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
-        account = Account(fname, args.new_account, password)
+        account = Account(pw, args.new_account)
         print("Creating new account with", args.new_account)
         account.create_new_account(ALPHABET, args.password_length)
         if args.set_acpass is not None:
             account.set_acpass(args.set_acpass)
         print("Account created")
     elif args.delete_account is not None:
-        account = Account(fname, args.delete_account, password)
+        account = Account(pw, args.delete_account)
         account.delete_account()
         print("Deleted account:", args.delete_account)
     elif args.change_acpass is not None:
-        account = Account(fname, args.change_acpass, password)
+        account = Account(pw, args.change_acpass)
         if args.set_acpass is None:
             account.set_acpass_rand(ALPHABET, args.password_length)
         else:
             account.set_acpass(args.set_acpass)
         print("Password changed for account:", args.change_acpass)
-    elif args.new_file is True:
-        create_new_file(fname, password)
-        print("New file created:", args.new_file)
     return
 
 
