@@ -11,7 +11,7 @@ FILE_PASSWORD = "hello"
 test_alphabet = passman.ALPHABET
 password_length = 2 * len(passman.ALPHABET)
 specified_pass = "myn3wpass"
-passfile = None
+pwfile = None
 
 class Tests(unittest.TestCase):
     @classmethod
@@ -26,6 +26,7 @@ class Tests(unittest.TestCase):
         # check if file 'fname' already exists each time before test runs. If it does, delete it.
         if os.path.isfile(fname):
             os.remove(fname)
+        global pwfile
         pwfile = passman.PwFile.create_new_file(fname, FILE_PASSWORD, True)
         ac1 = passman.Account(pwfile, "bird")
         ac1.create_new_account(test_alphabet, 8)
@@ -82,7 +83,7 @@ class Tests(unittest.TestCase):
         :return: Account instance
         """
         random_account = self.create_random_account()
-        pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
+        global pwfile
         account = passman.Account(pwfile, random_account)
         if account.check_if_account_exists():
             return self.get_non_existing_account(fname)
@@ -149,7 +150,7 @@ class Tests(unittest.TestCase):
 
     #! TODO: confirm - do I have to remake pwfile each time?
     def test_create_new_account_existing_acct(self):
-        pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
+        # pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
         account = passman.Account(pwfile, "fish")
         try:
             account.create_new_account(test_alphabet, password_length)
@@ -223,7 +224,8 @@ class Tests(unittest.TestCase):
     def test_create_new_file_existing(self):
         fname = "test_file.csv"
         try:
-            passman.create_new_file(fname, FILE_PASSWORD)
+            # encrypt = True set arbitrarily
+            passman.PwFile.create_new_file(fname, FILE_PASSWORD, True)
             self.fail("Did not raise expected error")
         except RuntimeError as err:
             pass
@@ -232,7 +234,8 @@ class Tests(unittest.TestCase):
         fname2 = self.get_non_existing_fname()
         ret = os.path.isfile(fname2)
         self.assertEqual(ret, False)
-        passman.create_new_file(fname2, FILE_PASSWORD)
+        # encrypt = True is arbitrary
+        passman.PwFile.create_new_file(fname2, FILE_PASSWORD, True)
         ret = os.path.isfile(fname2)
         self.assertEqual(ret, True)
         os.remove(fname2)

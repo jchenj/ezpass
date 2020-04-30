@@ -80,7 +80,7 @@ class PwFile:
         :return: list of Account instances
         """
         if self.encrypt:
-            decryptedMessage = self.decrypt_file(self.fname, self.fpass)
+            decryptedMessage = self._decryptFile()
             data = pickle.loads(decryptedMessage)
         else:
             with open(self.fname, 'rb') as file:
@@ -124,12 +124,12 @@ class PwFile:
         return
 
     @staticmethod
-    def create_new_file(fname: str, fpass: str, encrypt: bool) -> None:
+    def create_new_file(fname: str, fpass: str, encrypt: bool):
         """
         Given a file name, password and encryption value, creates a new file with those values and an empty
         list for storing accounts
         Assumes that the file name doesn't already exist in the current directory
-        :return: none
+        :return: PwFile instance
         :side effect: new file with specified file name, password and encryption value
         """
         # ! TODO: add an option to overwrite file or enter new fname
@@ -141,7 +141,7 @@ class PwFile:
         os.close(fd)
         new_file = PwFile(fname, fpass, encrypt)
         new_file.writeFile([])
-        return
+        return new_file
 
 #! TODO next - add PWfile instance as param to account
 #! TODO - rename class to AcList?
@@ -154,6 +154,7 @@ class Account:
         :param pwfile: PwFile instance
         :param acname: account name (cannot contain spaces, newlines or tabs)
         """
+        assert pwfile is not None
         if " " in acname:
             raise RuntimeError("Spaces not allowed in account names")
         self.pwfile = pwfile
