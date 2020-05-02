@@ -12,6 +12,7 @@ test_alphabet = passman.ALPHABET
 password_length = 2 * len(passman.ALPHABET)
 specified_pass = "myn3wpass"
 pwfile = None
+acname = "some@gmail.com"
 
 class Tests(unittest.TestCase):
     @classmethod
@@ -26,14 +27,14 @@ class Tests(unittest.TestCase):
         # check if file 'fname' already exists each time before test runs. If it does, delete it.
         if os.path.isfile(fname):
             os.remove(fname)
-        global pwfile
+        global pwfile, acname
         pwfile = passman.PwFile.create_new_file(fname, FILE_PASSWORD, True)
-        ac1 = passman.Account(pwfile, "bird")
-        ac1.create_new_account(test_alphabet, 8)
-        ac2 = passman.Account(pwfile, "fish")
-        ac2.create_new_account(test_alphabet, 8)
-        ac3 = passman.Account(pwfile, "dog")
-        ac3.create_new_account(test_alphabet, 8)
+        ac1 = passman.Account(pwfile, "Twitter")
+        ac1.create_new_account(acname, test_alphabet, 8)
+        ac2 = passman.Account(pwfile, "Gmail")
+        ac2.create_new_account(acname, test_alphabet, 8)
+        ac3 = passman.Account(pwfile, "Pinterest")
+        ac3.create_new_account(acname, test_alphabet, 8)
         print("Tests setUp: end")
 
     @classmethod
@@ -109,7 +110,7 @@ class Tests(unittest.TestCase):
 
     def test_check_if_account_exists_existing_acct(self):
         pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
-        account = passman.Account(pwfile, 'bird')
+        account = passman.Account(pwfile, 'Twitter')
         ret = account.check_if_account_exists()
         self.assertEqual(ret, True)
 
@@ -125,7 +126,7 @@ class Tests(unittest.TestCase):
     # def test_get_password_from_file_valid_acct_default(self):
     #     if passman.ENCRYPT:
     #         return
-    #     account = passman.Account(fname, 'bird', FILE_PASSWORD)
+    #     account = passman.Account(fname, 'Twitter', FILE_PASSWORD)
     #     with open(fname, "r") as file:
     #         data = csv.reader(file)
     #         for row in data:
@@ -151,25 +152,28 @@ class Tests(unittest.TestCase):
     #! TODO: confirm - do I have to remake pwfile each time?
     def test_create_new_account_existing_acct(self):
         # pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
-        account = passman.Account(pwfile, "fish")
+        global acname
+        account = passman.Account(pwfile, "Gmail")
         try:
-            account.create_new_account(test_alphabet, password_length)
+            account.create_new_account(acname, test_alphabet, password_length)
             self.fail("Did not raise expected exception")
         except RuntimeError as err:
             pass
         # any unexpected exceptions will be caught by unittest framework
 
     def test_create_new_account_non_existing_acct(self):
+        global acname
         account = self.get_non_existing_account(fname)
         ret = account.check_if_account_exists()
         self.assertEqual(ret, False)
-        account.create_new_account(test_alphabet, password_length)
+        account.create_new_account(acname, test_alphabet, password_length)
         ret = account.check_if_account_exists()
         self.assertEqual(ret, True)
 
     def test_delete_account_existing(self):
+        global acname
         account = self.get_non_existing_account(fname)
-        account.create_new_account(test_alphabet, password_length)
+        account.create_new_account(acname, test_alphabet, password_length)
         account.delete_account()
         ret = account.check_if_account_exists()
         self.assertEqual(ret, False)
@@ -183,8 +187,9 @@ class Tests(unittest.TestCase):
             pass
 
     def test_change_password_existing_rand(self):
+        global acname
         account = self.get_non_existing_account(fname)
-        account.create_new_account(test_alphabet, password_length)
+        account.create_new_account(acname, test_alphabet, password_length)
         # print_to_screen is False
         account.get_password_from_file(False)
         pw1 = pyperclip.paste()
@@ -194,8 +199,9 @@ class Tests(unittest.TestCase):
         self.assertNotEqual(pw1, pw2)
 
     def test_change_password_existing_specified_pass(self):
+        global acname
         account = self.get_non_existing_account(fname)
-        account.create_new_account(test_alphabet, password_length)
+        account.create_new_account(acname, test_alphabet, password_length)
         # print_to_screen is False
         account.get_password_from_file(False)
         pw1 = pyperclip.paste()

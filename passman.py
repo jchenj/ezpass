@@ -146,25 +146,30 @@ class PwFile:
 #! TODO next - add PWfile instance as param to account
 #! TODO - rename class to AcList?
 #! TODO - take acname out of class?
+#! TODO - rename acname to username?
 
 
 class Account:
-    def __init__(self, pwfile: PwFile, acname: str) -> None:
+    def __init__(self, pwfile: PwFile, org: str) -> None:
         """
         :param pwfile: PwFile instance
-        :param acname: account name (cannot contain spaces, newlines or tabs)
+        :param org: name of organization that account belongs to (e.g. Bank of America)
+        # :param acname: account name (cannot contain spaces, newlines or tabs)
         """
         assert pwfile is not None
-        if " " in acname:
+        if " " in org:
             raise RuntimeError("Spaces not allowed in account names")
         self.pwfile = pwfile
-        self.acname = acname
+        self.org = org
+        self.acname = None
         self.acpassword = None
 
     def get_acname(self):
         return self.acname
 
-    #! TODO: check - do I need to include self.acname in signature?
+    def get_org(self):
+        return self.org
+
     def delete_account(self):
         """
         Deletes the specified account name and password
@@ -173,11 +178,11 @@ class Account:
         :side effect: file without account name and password
         """
         if not self.check_if_account_exists():
-            raise RuntimeError("Account '{}' does not exist".format(self.acname))
+            raise RuntimeError("Account for org '{}' does not exist".format(self.org))
         # read in the password file
         data = self.pwfile.readFile()
         # write out the password file except the account to delete
-        new_data = [account for account in data if account.acname != self.acname]
+        new_data = [account for account in data if account.org != self.org]
         self.pwfile.writeFile(new_data)
         return
 
@@ -210,25 +215,25 @@ class Account:
         :side effect: file with account updated with new password
         """
         if not self.check_if_account_exists():
-            raise RuntimeError("Account '{}' does not exist".format(self.acname))
+            raise RuntimeError("Account for org '{}' does not exist".format(self.org))
         if new_password == "":
             raise RuntimeError("Password cannot be empty")
         # read in the password file
-        data = self.pwfile.readFile()
-        for account in data:
+        aclist = self.pwfile.readFile()
+        for account in aclist:
             #! TODO: is strip() necessary?
-            if account.acname.strip() == self.acname:
+            if account.org.strip() == self.org:
                 account.acpassword = new_password
-        self.pwfile.writeFile(data)
+        self.pwfile.writeFile(aclist)
         return
 
     def check_if_account_exists(self) -> bool:
         """
         If account exists in file, returns True. If account doesn't exist in file, returns False.
         """
-        data = self.pwfile.readFile()
-        for account in data:
-            if account.acname.strip() == self.acname:
+        aclist = self.pwfile.readFile()
+        for account in aclist:
+            if account.org.strip() == self.org:
                 return True
         return False
 
@@ -240,24 +245,23 @@ class Account:
         :return: None
         :side effect: password in paste buffer (default) or printed to screen (if optional parameter used)
         """
-        data = self.pwfile.readFile()
-        for account in data:
-            if account.acname.strip() == self.acname:
-                password = account.acpassword.strip()
-                if password == "":
-                    print("Password field is empty for account '{}'".format(self.acname))
-                    # ! TODO: what needed to put here so 'pw in print buffer' message from mainfunc doesn't print?
+        aclist = self.pwfile.readFile()
+        for account in aclist:
+            if account.org == self.org:
+                username = account.acname
+                password = account.acpassword
+                print("Username for org {} is {}".format(self.org, username))
+                if print_to_screen:
+                    print("Password for org '{}' is '{}'".format(self.org, password))
                 else:
-                    if print_to_screen:
-                        print("Password for account '{}' is '{}'".format(self.acname, password))
-                    else:
-                        pyperclip.copy(password)
+                    pyperclip.copy(password)
                 return
-        raise RuntimeError("Account '{}' not in file".format(self.acname))
+        raise RuntimeError("Account for org '{}' not in file".format(self.org))
 
-    def create_new_account(self, alphabet: str, password_length: bool) -> None:
+    def create_new_account(self, acname: str, alphabet: str, password_length: bool) -> None:
         """
         For an account name that does not already exist in the file, appends the account name and password to the file
+        :acname: username
         :param alphabet: string of the full alphabet
         :param password_length: length of password - an integer > 0
         :return: None
@@ -265,11 +269,12 @@ class Account:
         """
         assert (password_length > 0)
         if self.check_if_account_exists():
-            raise RuntimeError("Account '{}' already exists".format(self.acname))
+            raise RuntimeError("Account for org '{}' already exists".format(self.org))
         self.acpassword = create_password(alphabet, password_length)
-        data = self.pwfile.readFile()
-        data.append(self)
-        self.pwfile.writeFile(data)
+        self.acname = acname
+        aclist = self.pwfile.readFile()
+        aclist.append(self)
+        self.pwfile.writeFile(aclist)
         return
 
 
@@ -298,20 +303,25 @@ def create_password(alphabet: str, length: int) -> str:
         password = password + letter
     return password
 
+
 def mainfunc():
     parser = argparse.ArgumentParser(description='Retrieve password.')
+    # required
     parser.add_argument('-f', '--file', type=str, help='file name', required=True)
-    parser.add_argument('-g', '--get-acpass', type=str, help='account name')
-    parser.add_argument('-na', '--new-account', type=str, help='new account name')
+    # choose one
+    parser.add_argument('-g', '--get-acpass', type=str, help='org name')
+    parser.add_argument('-na', '--new-account', type=str, help='new org name')
+    parser.add_argument('-d', '--delete-account', type=str, help='delete account for specified org')
+    parser.add_argument('-nf', '--new-file', action='store_true', help='whether or not to create new file')
+    parser.add_argument('-cp', '--change-acpass', type=str, help='org to change password for')
+    parser.add_argument('-sp', '--set-acpass', type=str, help='set specified password', default=None)
+    # optional
     parser.add_argument('-print', '--print-to-screen', action='store_true', help='print password to screen', required=False,
                         default=False)
     parser.add_argument('-l', '--password-length', type=int, help='password length', required=False, default=8)
-    parser.add_argument('-d', '--delete-account', type=str, help='delete specified account')
-    parser.add_argument('-nf', '--new-file', action='store_true', help='whether or not to create new file')
     parser.add_argument('-e', '--encrypt', action='store_true', help='whether or not file is encrypted')
     parser.add_argument('-a', '--alphabet', type=str, help='full alphabet', required=False)
-    parser.add_argument('-cp', '--change-acpass', type=str, help='account to change password of')
-    parser.add_argument('-sp', '--set-acpass', type=str, help='set specified password', default=None)
+
     args = parser.parse_args()
 
     assert args.file is not None
@@ -342,28 +352,30 @@ def mainfunc():
         print("New file created:", fname)
         return
 
-    pw = PwFile(fname, password, args.encrypt)
+    # Create PwFile instance based on file name & password
+    pfile = PwFile(fname, password, args.encrypt)
 
     if args.get_acpass is not None:
-        account = Account(pw, args.get_acpass)
+        account = Account(pfile, args.get_acpass)
         account.get_password_from_file(args.print_to_screen)
         if args.print_to_screen is False:
             print("Password for account '{}' in paste buffer".format(args.get_acpass))
     elif args.new_account is not None:
         if args.password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
-        account = Account(pw, args.new_account)
-        print("Creating new account with", args.new_account)
-        account.create_new_account(ALPHABET, args.password_length)
+        account = Account(pfile, args.new_account)
+        print("Creating new account for:", args.new_account)
+        acname = input("Enter username: ")
+        account.create_new_account(acname, ALPHABET, args.password_length)
         if args.set_acpass is not None:
             account.set_acpass(args.set_acpass)
         print("Account created")
     elif args.delete_account is not None:
-        account = Account(pw, args.delete_account)
+        account = Account(pfile, args.delete_account)
         account.delete_account()
-        print("Deleted account:", args.delete_account)
+        print("Deleted account for:", args.delete_account)
     elif args.change_acpass is not None:
-        account = Account(pw, args.change_acpass)
+        account = Account(pfile, args.change_acpass)
         if args.set_acpass is None:
             account.set_acpass_rand(ALPHABET, args.password_length)
         else:
