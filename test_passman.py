@@ -234,7 +234,7 @@ class Tests(unittest.TestCase):
         fname2 = self.get_non_existing_fname()
         ret = os.path.isfile(fname2)
         self.assertEqual(ret, False)
-        # encrypt = True is arbitrary
+        # encrypt = True is set arbitrarily
         passman.PwFile.create_new_file(fname2, FILE_PASSWORD, True)
         ret = os.path.isfile(fname2)
         self.assertEqual(ret, True)

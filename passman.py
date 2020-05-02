@@ -129,7 +129,7 @@ class PwFile:
         Given a file name, password and encryption value, creates a new file with those values and an empty
         list for storing accounts
         Assumes that the file name doesn't already exist in the current directory
-        :return: PwFile instance
+        :return: PwFile  instance
         :side effect: new file with specified file name, password and encryption value
         """
         # ! TODO: add an option to overwrite file or enter new fname
