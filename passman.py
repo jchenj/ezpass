@@ -157,12 +157,35 @@ class Account:
         # :param acname: account name (cannot contain spaces, newlines or tabs)
         """
         assert pwfile is not None
-        if " " in org:
-            raise RuntimeError("Spaces not allowed in account names")
+        if not Account.validate_orgname(org):
+            raise RuntimeError("Org format is invalid")
         self.pwfile = pwfile
         self.org = org
         self.acname = None
         self.acpassword = None
+
+    @staticmethod
+    def validate_accountname(acname):
+        return Account._validate_string(acname)
+
+    @staticmethod
+    def validate_orgname(org):
+        return Account._validate_string(org)
+
+    @staticmethod
+    def validate_pass(pw):
+        return Account._validate_string(pw)
+
+    @staticmethod
+    def _validate_string(s):
+        '''
+        Returns True if the string is a non-empty string with no whitespaces
+        :param s: string to validate
+        :return: True if s is valid
+        '''
+        if (s == "") or (" " in s) or (s.strip() != s):
+            return False
+        return True
 
     def get_acname(self):
         return self.acname
@@ -177,7 +200,7 @@ class Account:
         :return: None
         :side effect: file without account name and password
         """
-        if not self.check_if_account_exists():
+        if not self.check_if_org_exists():
             raise RuntimeError("Account for org '{}' does not exist".format(self.org))
         # read in the password file
         data = self.pwfile.readFile()
@@ -214,26 +237,25 @@ class Account:
         :return: None
         :side effect: file with account updated with new password
         """
-        if not self.check_if_account_exists():
+        if not self.check_if_org_exists():
             raise RuntimeError("Account for org '{}' does not exist".format(self.org))
-        if new_password == "":
-            raise RuntimeError("Password cannot be empty")
+        if not Account.validate_pass(new_password):
+            raise RuntimeError("Invalid password format")
         # read in the password file
         aclist = self.pwfile.readFile()
         for account in aclist:
-            #! TODO: is strip() necessary?
-            if account.org.strip() == self.org:
+            if account.org == self.org:
                 account.acpassword = new_password
         self.pwfile.writeFile(aclist)
         return
 
-    def check_if_account_exists(self) -> bool:
+    def check_if_org_exists(self) -> bool:
         """
         If account exists in file, returns True. If account doesn't exist in file, returns False.
         """
         aclist = self.pwfile.readFile()
         for account in aclist:
-            if account.org.strip() == self.org:
+            if account.org == self.org:
                 return True
         return False
 
@@ -268,7 +290,9 @@ class Account:
         :side effect: account name and password appended to existing file
         """
         assert (password_length > 0)
-        if self.check_if_account_exists():
+        if not Account.validate_accountname(acname):
+            raise RuntimeError("Account name {} has an invalid format".format(acname))
+        if self.check_if_org_exists():
             raise RuntimeError("Account for org '{}' already exists".format(self.org))
         self.acpassword = create_password(alphabet, password_length)
         self.acname = acname

@@ -86,7 +86,7 @@ class Tests(unittest.TestCase):
         random_account = self.create_random_account()
         global pwfile
         account = passman.Account(pwfile, random_account)
-        if account.check_if_account_exists():
+        if account.check_if_org_exists():
             return self.get_non_existing_account(fname)
         else:
             return account
@@ -111,31 +111,13 @@ class Tests(unittest.TestCase):
     def test_check_if_account_exists_existing_acct(self):
         pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
         account = passman.Account(pwfile, 'Twitter')
-        ret = account.check_if_account_exists()
+        ret = account.check_if_org_exists()
         self.assertEqual(ret, True)
 
     def test_check_if_account_exists_non_existing_acct(self):
         account = self.get_non_existing_account(fname)
-        ret = account.check_if_account_exists()
+        ret = account.check_if_org_exists()
         self.assertEqual(ret, False)
-
-    #! TODO: discuss if this is a good way to check get password guven current random pws
-    #! TODO: create option to set PWs manually and change tests using manually given pws
-    # This test always passes when encryption is True
-    # Commenting out test for now - assumes implementation details of _readFile and _writeFile
-    # def test_get_password_from_file_valid_acct_default(self):
-    #     if passman.ENCRYPT:
-    #         return
-    #     account = passman.Account(fname, 'Twitter', FILE_PASSWORD)
-    #     with open(fname, "r") as file:
-    #         data = csv.reader(file)
-    #         for row in data:
-    #             if row[0].strip() == account.acname:
-    #                 password = row[1]
-    #     # print_to_screen is False
-    #     account.get_password_from_file(False)
-    #     pw = pyperclip.paste()
-    #     self.assertEqual(pw, password)
 
     def test_get_password_from_file_invalid_acct_default(self):
         account = self.get_non_existing_account(fname)
@@ -164,10 +146,10 @@ class Tests(unittest.TestCase):
     def test_create_new_account_non_existing_acct(self):
         global acname
         account = self.get_non_existing_account(fname)
-        ret = account.check_if_account_exists()
+        ret = account.check_if_org_exists()
         self.assertEqual(ret, False)
         account.create_new_account(acname, test_alphabet, password_length)
-        ret = account.check_if_account_exists()
+        ret = account.check_if_org_exists()
         self.assertEqual(ret, True)
 
     def test_delete_account_existing(self):
@@ -175,7 +157,7 @@ class Tests(unittest.TestCase):
         account = self.get_non_existing_account(fname)
         account.create_new_account(acname, test_alphabet, password_length)
         account.delete_account()
-        ret = account.check_if_account_exists()
+        ret = account.check_if_org_exists()
         self.assertEqual(ret, False)
 
     def test_delete_account_non_existing(self):
