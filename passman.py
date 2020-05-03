@@ -143,10 +143,26 @@ class PwFile:
         new_file.writeFile([])
         return new_file
 
-#! TODO next - add PWfile instance as param to account
 #! TODO - rename class to AcList?
 #! TODO - take acname out of class?
 #! TODO - rename acname to username?
+#
+# class AccountDB:
+#     def __init__(self, pwfile: PwFile) -> None:
+#         """
+#         :param pwfile: PwFile instance
+#         :param org: name of organization that account belongs to (e.g. Bank of America)
+#         # :param acname: account name (cannot contain spaces, newlines or tabs)
+#         """
+#         assert pwfile is not None
+#         self.pwfile = pwfile
+#         # TODO read the pwfile,
+#         # populate a local representation of the accounts
+#         self.accounts = self.pwfile.readFile()
+#
+#     def get_account_pass(self, orgname):
+#         # 1. find account with orgname
+#         # 2. print/copy account's username/pass
 
 
 class Account:
@@ -183,7 +199,7 @@ class Account:
         :param s: string to validate
         :return: True if s is valid
         '''
-        if (s == "") or (" " in s) or (s.strip() != s):
+        if (s is None) or (s == "") or (" " in s) or (s.strip() != s):
             return False
         return True
 
