@@ -1,27 +1,25 @@
-  #!/bin/bash
+#!/bin/bash
 
-  echo "Running tests..."
-
-#! TODO: add -e encrypted flag to relevant commands
-#! TODO: enter pw manually when prompted, or pipe in pws from another file
+echo "Running tests..."
 
 # Create new file
-  python3 passman.py -f testfile -nf
+yes | python3 passman.py -f testfile -nf -e
+
 # Create new account
-  python3 passman.py -f testfile -na bob
+yes | python3 passman.py -f testfile -na bob -e
 # Get password for account
-  python3 passman.py -f testfile -g bob
+yes | python3 passman.py -f testfile -g bob -e
 # Change password, specifying password length
 #! TODO: check below - how do I know if it's creating a PW of correct length?
-  python3 passman.py -f testfile -cp bob -l 4
+yes | python3 passman.py -f testfile -cp bob -l 4 -e
 # Change password with specified password
 #! TODO: check below - how do I know if it's creating correct PW?
-  python3 passman.py -f testfile -cp bob -sp 8080boat
+yes | python3 passman.py -f testfile -cp bob -sp 8080boat -e
 # Get password, printing to screen
-  python3 passman.py -f testfile -g bob -print
+yes | python3 passman.py -f testfile -g bob -print -e
 #! Delete account
-  python3 passman.py -f testfile -d bob
+yes | python3 passman.py -f testfile -d bob -e
 
-  rm testfile
+rm testfile
 
-  echo "Done running tests"
+echo "Done running tests"
