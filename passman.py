@@ -3,6 +3,8 @@ import argparse
 import random
 import os.path
 import pickle
+import cmd
+import sys
 # imports for encryption
 import base64
 import os
@@ -343,6 +345,40 @@ def create_password(alphabet: str, length: int) -> str:
         password = password + letter
     return password
 
+class PassShell(cmd.Cmd):
+    intro = 'Welcome to the Passman interactive shell.   Type "help" or "?" to list commands.\n'
+    prompt = '(passman) '
+    file = None
+
+    def __init__(self, pfile):
+        cmd.Cmd.__init__(self, 'tab', sys.stdin, sys.stdout)
+        self.pfile = pfile
+
+    # ----- basic passman commands -----
+    # Must have pwfile before interactive mode can be used
+
+    def do_new_account(self, acname):
+        """Add a new org name:  NA acname"""
+        print(acname)
+
+    def do_delete_account(self, acname):
+        """Delete account for specified org:  D org_name"""
+        account = Account(self.pfile, acname)
+        account.delete_account()
+        print("Deleted account for:", acname)
+
+    def get_account_password(self, acname):
+        """Get password for specified org: G org_name"""
+        print(acname)
+
+    def do_change_account_password(self, acname):
+        """Change password for specified org: CP org_name"""
+        print(acname)
+
+    def do_quit(self, arg):
+        """Quit the program"""
+        print(arg)
+
 
 def mainfunc():
     parser = argparse.ArgumentParser(description='Retrieve password.')
@@ -356,11 +392,13 @@ def mainfunc():
     parser.add_argument('-cp', '--change-acpass', type=str, help='org to change password for')
     parser.add_argument('-sp', '--set-acpass', type=str, help='set specified password', default=None)
     # optional
-    parser.add_argument('-print', '--print-to-screen', action='store_true', help='print password to screen', required=False,
-                        default=False)
+    parser.add_argument('-print', '--print-to-screen', action='store_true', help='print password to screen',
+                        required=False, default=False)
     parser.add_argument('-l', '--password-length', type=int, help='password length', required=False, default=8)
     parser.add_argument('-e', '--encrypt', action='store_true', help='whether or not file is encrypted')
     parser.add_argument('-a', '--alphabet', type=str, help='full alphabet', required=False)
+    parser.add_argument('-i', '--interactive', action='store_true', help='whether or not to use '
+                                                                         'interactive mode')
 
     args = parser.parse_args()
 
@@ -379,7 +417,8 @@ def mainfunc():
     delete_account_int = int(args.delete_account is not None)
     change_acpass_int = int(args.change_acpass is not None)
     new_file_int = int(args.new_file is True)
-    param_sum = get_acpass_int + new_account_int + delete_account_int + change_acpass_int + new_file_int
+    interactive_int = int(args.interactive is True)
+    param_sum = get_acpass_int + new_account_int + delete_account_int + change_acpass_int + new_file_int + interactive_int
     if param_sum > 1:
         parser.print_help()
         raise RuntimeError("Error. Can only use one of these flags at a time")
@@ -394,6 +433,11 @@ def mainfunc():
 
     # Create PwFile instance based on file name & password
     pfile = PwFile(fname, password, args.encrypt)
+
+    if args.interactive is True:
+        shell = PassShell(pfile)
+        shell.cmdloop()
+        return
 
     if args.get_acpass is not None:
         account = Account(pfile, args.get_acpass)
