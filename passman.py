@@ -357,23 +357,41 @@ class PassShell(cmd.Cmd):
     # ----- basic passman commands -----
     # Must have pwfile before interactive mode can be used
 
-    def do_new_account(self, acname):
-        """Add a new org name:  NA acname"""
-        print(acname)
+    def do_new_account(self, arg):
+        """Add a new org name:  NA acname password_length set_acpass"""
+        acname, password_length, set_acpass = arg.split()
+        password_length = int(password_length)
+        set_acpass = bool(set_acpass)
+        if password_length < 1:
+            raise RuntimeError("Error. Password length must be greater than 0.")
+        account = Account(self.pfile, acname)
+        print("Creating new account for: ", acname)
+        account.create_new_account(acname, ALPHABET, password_length)
+        if set_acpass is not None:
+            account.set_acpass(set_acpass)
+        print("Account created")
 
     def do_delete_account(self, acname):
-        """Delete account for specified org:  D org_name"""
+        """Delete account for specified org:  D acname"""
         account = Account(self.pfile, acname)
         account.delete_account()
-        print("Deleted account for:", acname)
+        print("Deleted account for: ", acname)
 
-    def get_account_password(self, acname):
-        """Get password for specified org: G org_name"""
-        print(acname)
+    def get_account_password(self, acname, print_to_screen):
+        """Get password for specified org: G org_name print_to_screen"""
+        account = Account(self.pfile, acname)
+        account.get_password_from_file(print_to_screen)
+        if print_to_screen is False:
+            print("Password for account '{}' in paste buffer".format(acname))
 
-    def do_change_account_password(self, acname):
-        """Change password for specified org: CP org_name"""
-        print(acname)
+    def do_change_account_password(self, acname, set_acpass, password_length):
+        """Change password for specified org: CP acname set_acpass password_length"""
+        account = Account(self.pfile, acname)
+        if set_acpass is None:
+            account.set_acpass_rand(ALPHABET, password_length)
+        else:
+            account.set_acpass(acname)
+        print("Password changed for account: ", acname)
 
     def do_quit(self, arg):
         """Quit the program"""
