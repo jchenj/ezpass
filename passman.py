@@ -359,53 +359,24 @@ class PassShell(cmd.Cmd):
     # ----- basic passman commands -----
     # Must have pwfile before interactive mode can be used
 
-    #! TODO: make into parser for new account
-    def do_blah(self, line):
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-on', '--org-name', type=str, help='new org name')
-        parser.add_argument('-pl', '--pw-length', type=int, required=False, default=8, help='password length')
-        parser.add_argument('-sp', '--set-acpass', type=str, default=None, help='set specified password')
-        args = parser.parse_args(shlex.split(line))
-        print(args)
-        return
-
-    # elif args.new_account is not None:
-    # if args.pw_length < 1:
-    #     raise RuntimeError("Error. Password length must be greater than 0.")
-    # account = Account(pfile, args.acname)
-    # print("Creating new account for:", args.acname)
-    # acname = input("Enter username: ")
-    # account.create_new_account(acname, ALPHABET, args.password_length)
-    # if args.set_acpass is not None:
-    #     account.set_acpass(args.set_acpass)
-    # print("Account created")
-
+    #! TODO improve docstrsing help for new_account
     def do_new_account(self, line):
-        """Add a new org name:  new_account --org-name --pw-length --set-acpass"""
+        """Add a new org:  NEW_ACCOUNT --org-name --pw-length --set-acpass"""
         parser = argparse.ArgumentParser()
-
         parser.add_argument('-on', '--org-name', type=str, help='new org name')
         parser.add_argument('-pl', '--pw-length', type=int, required=False, default=8, help='password length')
         parser.add_argument('-sp', '--set-acpass', type=str, default=None, help='set specified password')
         args = parser.parse_args(shlex.split(line))
 
-        if len(args) == 2:
-            acname, password_length = args
-            password_length = int(password_length)
-            set_acpass = None
-            args.append(set_acpass)
-        else:
-            acname, password_length, set_acpass = args
-            password_length = int(password_length)
-            set_acpass = str(set_acpass)
-        if password_length < 1:
+        if args.pw_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
-        account = Account(self.pfile, acname)
-        print("Creating new account for: ", acname)
-        account.create_new_account(acname, ALPHABET, password_length)
-        if set_acpass is not None:
-            account.set_acpass(set_acpass)
-        print("Account created")
+        account = Account(self.pfile, args.org_name)
+        print("Creating new account for:", args.org_name)
+        acname = input("Enter username: ")
+        account.create_new_account(acname, ALPHABET, args.pw_length)
+        if args.set_acpass is not None:
+            account.set_acpass(args.set_acpass)
+        print("Account created for:", args.org_name)
 
     def do_delete_account(self, acname):
         """Delete account for specified org:  D acname"""
