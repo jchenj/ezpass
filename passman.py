@@ -1,3 +1,4 @@
+import shlex
 import pyperclip
 import argparse
 import random
@@ -238,7 +239,7 @@ class Account:
         new_password = create_password(alphabet, password_length)
         return self._change_password(new_password)
 
-    def set_acpass(self, specified_pass: int) -> None:
+    def set_acpass(self, specified_pass: str) -> None:
         """
         Sets password of specified account to a new specified password
         Assumes account names exists in file
@@ -345,6 +346,7 @@ def create_password(alphabet: str, length: int) -> str:
         password = password + letter
     return password
 
+
 class PassShell(cmd.Cmd):
     intro = 'Welcome to the Passman interactive shell.   Type "help" or "?" to list commands.\n'
     prompt = '(passman) '
@@ -357,11 +359,45 @@ class PassShell(cmd.Cmd):
     # ----- basic passman commands -----
     # Must have pwfile before interactive mode can be used
 
-    def do_new_account(self, arg):
-        """Add a new org name:  NA acname password_length set_acpass"""
-        acname, password_length, set_acpass = arg.split()
-        password_length = int(password_length)
-        set_acpass = bool(set_acpass)
+    #! TODO: make into parser for new account
+    def do_blah(self, line):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-on', '--org-name', type=str, help='new org name')
+        parser.add_argument('-pl', '--pw-length', type=int, required=False, default=8, help='password length')
+        parser.add_argument('-sp', '--set-acpass', type=str, default=None, help='set specified password')
+        args = parser.parse_args(shlex.split(line))
+        print(args)
+        return
+
+    # elif args.new_account is not None:
+    # if args.pw_length < 1:
+    #     raise RuntimeError("Error. Password length must be greater than 0.")
+    # account = Account(pfile, args.acname)
+    # print("Creating new account for:", args.acname)
+    # acname = input("Enter username: ")
+    # account.create_new_account(acname, ALPHABET, args.password_length)
+    # if args.set_acpass is not None:
+    #     account.set_acpass(args.set_acpass)
+    # print("Account created")
+
+    def do_new_account(self, line):
+        """Add a new org name:  new_account --org-name --pw-length --set-acpass"""
+        parser = argparse.ArgumentParser()
+
+        parser.add_argument('-on', '--org-name', type=str, help='new org name')
+        parser.add_argument('-pl', '--pw-length', type=int, required=False, default=8, help='password length')
+        parser.add_argument('-sp', '--set-acpass', type=str, default=None, help='set specified password')
+        args = parser.parse_args(shlex.split(line))
+
+        if len(args) == 2:
+            acname, password_length = args
+            password_length = int(password_length)
+            set_acpass = None
+            args.append(set_acpass)
+        else:
+            acname, password_length, set_acpass = args
+            password_length = int(password_length)
+            set_acpass = str(set_acpass)
         if password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
         account = Account(self.pfile, acname)
@@ -377,7 +413,7 @@ class PassShell(cmd.Cmd):
         account.delete_account()
         print("Deleted account for: ", acname)
 
-    def get_account_password(self, acname, print_to_screen):
+    def do_get_account_password(self, acname, print_to_screen):
         """Get password for specified org: G org_name print_to_screen"""
         account = Account(self.pfile, acname)
         account.get_password_from_file(print_to_screen)
