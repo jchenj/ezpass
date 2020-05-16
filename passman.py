@@ -378,21 +378,35 @@ class PassShell(cmd.Cmd):
             account.set_acpass(args.set_acpass)
         print("Account created for:", args.org_name)
 
-    def do_delete_account(self, acname):
+    #! TODO: delete account using argparse
+    def do_delete_account(self, line):
         """Delete account for specified org:  D acname"""
+        parser = argparse.ArgumentParser()
+        parser.add_argument()
+        args = parser.parse_args(shlex.split(line))
+
+
         account = Account(self.pfile, acname)
         account.delete_account()
         print("Deleted account for: ", acname)
 
-    def do_get_account_password(self, acname, print_to_screen):
+    def do_get_account_password(self, line):
         """Get password for specified org: G org_name print_to_screen"""
+        parser = argparse.ArgumentParser()
+        parser.add_argument()
+        args = parser.parse_args(shlex.split(line))
+
         account = Account(self.pfile, acname)
         account.get_password_from_file(print_to_screen)
         if print_to_screen is False:
             print("Password for account '{}' in paste buffer".format(acname))
 
-    def do_change_account_password(self, acname, set_acpass, password_length):
+    def do_change_account_password(self, line):
         """Change password for specified org: CP acname set_acpass password_length"""
+        parser = argparse.ArgumentParser()
+        parser.add_argument()
+        args = parser.parse_args(shlex.split(line))
+
         account = Account(self.pfile, acname)
         if set_acpass is None:
             account.set_acpass_rand(ALPHABET, password_length)
@@ -400,8 +414,11 @@ class PassShell(cmd.Cmd):
             account.set_acpass(acname)
         print("Password changed for account: ", acname)
 
-    def do_quit(self, arg):
+    def do_quit(self, line):
         """Quit the program"""
+        parser = argparse.ArgumentParser()
+        parser.add_argument()
+        args = parser.parse_args(shlex.split(line))
         print(arg)
 
 
