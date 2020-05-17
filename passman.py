@@ -111,7 +111,7 @@ class PassShell(cmd.Cmd):
 
 
 def mainfunc():
-    parser = argparse.ArgumentParser(description='Retrieve password.')
+    parser = argparse.ArgumentParser(description='Password manager')
     # required
     parser.add_argument('-f', '--file', type=str, help='file name', required=True)
     # choose one
