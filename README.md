@@ -11,6 +11,7 @@ Command-line password manager written in Python
 * Delete account (and password) from file
 * Change password for an account
 * Create a new passwords
+* Interactive mode
 
 ## Dependencies
 * Requires [pyperclip](https://pypi.org/project/pyperclip/)
@@ -18,22 +19,33 @@ Command-line password manager written in Python
 
 ## Command line usage:
 ````
-passman.py [-h] [--get-pass GET_PASS] [--new-account NEW_ACCOUNT]
-                  [--print-to-screen] [--password-length PASSWORD_LENGTH]
-                  [--delete-account DELETE_ACCOUNT]
-                  [--change-pass CHANGE_PASS] [--new-file NEW_FILE]
-                  [--alphabet ALPHABET]
+usage: passman.py [-h] -f FILE [-g GET_ACPASS] [-na NEW_ACCOUNT]
+                  [-d DELETE_ACCOUNT] [-nf] [-cp CHANGE_ACPASS]
+                  [-sp SET_ACPASS] [-print] [-l PASSWORD_LENGTH] [-e]
+                  [-a ALPHABET] [-i]
 
-Retrieve password.
+Password manager
 
 optional arguments:
-  -h, --help                               show this help message and exit
-  --get-pass GET_PASS                      account name
-  --new-account NEW_ACCOUNT                new account name
-  --print-to-screen                        print password to screen
-  --password-length PASSWORD_LENGTH        password length
-  --delete-account DELETE_ACCOUNT          delete specified account
-  --change-pass CHANGE_PASS                change password for specified account
-  --new-file NEW_FILE                      create new file for passwords
-  --alphabet ALPHABET                      full alphabet
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  file name
+  -g GET_ACPASS, --get-acpass GET_ACPASS
+                        org name
+  -na NEW_ACCOUNT, --new-account NEW_ACCOUNT
+                        new org name
+  -d DELETE_ACCOUNT, --delete-account DELETE_ACCOUNT
+                        delete account for specified org
+  -nf, --new-file       whether or not to create new file
+  -cp CHANGE_ACPASS, --change-acpass CHANGE_ACPASS
+                        org to change password for
+  -sp SET_ACPASS, --set-acpass SET_ACPASS
+                        set specified password
+  -print, --print-to-screen
+                        print password to screen
+  -l PASSWORD_LENGTH, --password-length PASSWORD_LENGTH
+                        password length
+  -e, --encrypt         whether or not file is encrypted
+  -a ALPHABET, --alphabet ALPHABET
+                        full alphabet
+  -i, --interactive     whether or not to use interactive mode
 ````
