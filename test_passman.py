@@ -1,4 +1,5 @@
 import passman
+
 import unittest
 import pyperclip
 import random
