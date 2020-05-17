@@ -14,7 +14,7 @@ Command-line password manager written in Python
 
 ## Dependencies
 * Requires [pyperclip](https://pypi.org/project/pyperclip/)
-* Requires [pycrypto](https://pypi.org/project/pycrypto/)
+* Requires [cryptography](https://pypi.org/project/cryptography/)
 
 ## Command line usage:
 ````
