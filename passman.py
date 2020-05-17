@@ -63,22 +63,20 @@ class PassShell(cmd.Cmd):
             account.set_acpass(args.set_acpass)
         print("Account created for:", args.org_name)
 
-    #! TODO: delete account using argparse
-    def do_delete_account(self, line):
-        """Delete account for specified org:  D acname"""
+    def do_delac(self, line):
+        """Delete account for specified org: DELAC --org-name"""
         parser = argparse.ArgumentParser()
-        parser.add_argument()
+        parser.add_argument('-on', '--org-name', type=str, help='org name')
         args = parser.parse_args(shlex.split(line))
 
-
-        account = Account(self.pfile, acname)
+        account = Account(self.pfile, args.org_name)
         account.delete_account()
-        print("Deleted account for: ", acname)
+        print("Deleted account for:", args.org_name)
 
     def do_getacpass(self, line):
         """Get password for specified org: GETACPASS --org_name --print"""
         parser = argparse.ArgumentParser()
-        parser.add_argument('-o', '--org-name', type=str, help='org name')
+        parser.add_argument('-on', '--org-name', type=str, help='org name')
         parser.add_argument('-p', '--print', action='store_true', help='print password to screen',
                             required=False, default=False)
         args = parser.parse_args(shlex.split(line))
@@ -87,7 +85,6 @@ class PassShell(cmd.Cmd):
         account.get_password_from_file(args.print)
         if args.print is False:
             print("Password for org {} in paste buffer".format(args.org_name))
-
 
     def do_change_account_password(self, line):
         """Change password for specified org: CP acname set_acpass password_length"""
