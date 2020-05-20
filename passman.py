@@ -74,7 +74,7 @@ class PassShell(cmd.Cmd):
         print("Deleted account for:", args.org_name)
 
     def do_getacpass(self, line):
-        """Get password for specified org: GETACPASS --org_name --print"""
+        """Get password for specified org: GETACPASS --org-name --print"""
         parser = argparse.ArgumentParser()
         parser.add_argument('-on', '--org-name', type=str, help='org name')
         parser.add_argument('-p', '--print', action='store_true', help='print password to screen',
@@ -86,18 +86,20 @@ class PassShell(cmd.Cmd):
         if args.print is False:
             print("Password for org {} in paste buffer".format(args.org_name))
 
-    def do_change_account_password(self, line):
-        """Change password for specified org: CP acname set_acpass password_length"""
+    def do_chacpass(self, line):
+        """Change password for specified org: CHACPASS --org-name set-acpass pw-length"""
         parser = argparse.ArgumentParser()
-        parser.add_argument()
+        parser.add_argument('-on', '--org-name', type=str, help='org name')
+        parser.add_argument('-sp', '--set-acpass', type=str, default=None, help='set specified password')
+        parser.add_argument('-pl', '--pw-length', type=int, required=False, default=8, help='password length')
         args = parser.parse_args(shlex.split(line))
 
-        account = Account(self.pfile, acname)
-        if set_acpass is None:
-            account.set_acpass_rand(ALPHABET, password_length)
+        account = Account(self.pfile, args.org_name)
+        if args.set_acpass is None:
+            account.set_acpass_rand(ALPHABET, args.pw_length)
         else:
-            account.set_acpass(acname)
-        print("Password changed for account: ", acname)
+            account.set_acpass(args.set_acpass)
+        print("Password changed for account:", args.org_name)
 
     def do_quit(self, line):
         """Quit the program"""
