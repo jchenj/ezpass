@@ -101,13 +101,12 @@ class PassShell(cmd.Cmd):
             account.set_acpass(args.set_acpass)
         print("Password changed for account:", args.org_name)
 
-    def do_quit(self, line):
+#!TODO: find out what else needed for quit to save file correctly & close
+    def do_quit():
         """Quit the program"""
-        parser = argparse.ArgumentParser()
-        parser.add_argument()
-        args = parser.parse_args(shlex.split(line))
-        print(arg)
-
+        print("")
+        print("Goodbye!")
+        sys.exit(0)
 
 def mainfunc():
     parser = argparse.ArgumentParser(description='Password manager')
