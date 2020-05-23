@@ -1,4 +1,4 @@
-# passman
+# ezpass
 
 Command-line password manager written in Python
 
@@ -19,10 +19,10 @@ Command-line password manager written in Python
 
 ## Command line usage:
 ````
-usage: passman.py [-h] -f FILE [-g GET_ACPASS] [-na NEW_ACCOUNT]
-                  [-d DELETE_ACCOUNT] [-nf] [-cp CHANGE_ACPASS]
-                  [-sp SET_ACPASS] [-print] [-l PASSWORD_LENGTH] [-e]
-                  [-a ALPHABET] [-i]
+usage: ezpass.py [-h] -f FILE [-g GET_ACPASS] [-na NEW_ACCOUNT]
+                 [-d DELETE_ACCOUNT] [-nf] [-cp CHANGE_ACPASS]
+                 [-sp SET_ACPASS] [-print] [-l PASSWORD_LENGTH] [-e]
+                 [-a ALPHABET] [-i]
 
 Password manager
 
@@ -48,4 +48,13 @@ optional arguments:
   -a ALPHABET, --alphabet ALPHABET
                         full alphabet
   -i, --interactive     whether or not to use interactive mode
+````
+
+## Interactive mode usage
+````
+Documented commands (type help <topic>):
+========================================
+chacpass  delac  getacpass  help  newac  quit
+
+(ezpass) 
 ````

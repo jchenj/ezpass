@@ -1,11 +1,13 @@
+"""
+Main file for running ezpass. For more instructions, see repo's README:
+https://github.com/jchenj/ezpass
+"""
+
 import shlex
 import argparse
-import os.path
-
 import cmd
 import sys
 
-import os
 from util import *
 from pwfile import PwFile
 from account import Account 
@@ -33,15 +35,15 @@ from account import Account
 
 
 class PassShell(cmd.Cmd):
-    intro = 'Welcome to the Passman interactive shell.   Type "help" or "?" to list commands.\n'
-    prompt = '(passman) '
+    intro = 'Welcome to the ezpass interactive shell.   Type "help" or "?" to list commands.\n'
+    prompt = '(ezpass) '
     file = None
 
     def __init__(self, pfile):
         cmd.Cmd.__init__(self, 'tab', sys.stdin, sys.stdout)
         self.pfile = pfile
 
-    # ----- basic passman commands -----
+    # ----- basic ezpass commands -----
     # Must have pwfile before interactive mode can be used
 
     #! TODO improve docstrsing help for new_account

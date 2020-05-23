@@ -1,6 +1,11 @@
+"""
+Password generation utilities for ezpass
+"""
+
 import random
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
+
 
 def generate_random_letter(alphabet: str) -> str:
     """

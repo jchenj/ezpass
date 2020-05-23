@@ -1,4 +1,8 @@
-import passman
+"""
+Unit tests for ezpass.py and related modules
+"""
+
+import ezpass
 
 import unittest
 import pyperclip
@@ -9,8 +13,8 @@ import os
 fname = "test_file.csv"
 FILE_PASSWORD = "hello"
 #! TODO: would this be better to be a different alphabet than used in program default?
-test_alphabet = passman.ALPHABET
-password_length = 2 * len(passman.ALPHABET)
+test_alphabet = ezpass.ALPHABET
+password_length = 2 * len(ezpass.ALPHABET)
 specified_pass = "myn3wpass"
 pwfile = None
 acname = "some@gmail.com"
@@ -29,12 +33,12 @@ class Tests(unittest.TestCase):
         if os.path.isfile(fname):
             os.remove(fname)
         global pwfile, acname
-        pwfile = passman.PwFile.create_new_file(fname, FILE_PASSWORD, True)
-        ac1 = passman.Account(pwfile, "Twitter")
+        pwfile = ezpass.PwFile.create_new_file(fname, FILE_PASSWORD, True)
+        ac1 = ezpass.Account(pwfile, "Twitter")
         ac1.create_new_account(acname, test_alphabet, 8)
-        ac2 = passman.Account(pwfile, "Gmail")
+        ac2 = ezpass.Account(pwfile, "Gmail")
         ac2.create_new_account(acname, test_alphabet, 8)
-        ac3 = passman.Account(pwfile, "Pinterest")
+        ac3 = ezpass.Account(pwfile, "Pinterest")
         ac3.create_new_account(acname, test_alphabet, 8)
         print("Tests setUp: end")
 
@@ -55,7 +59,7 @@ class Tests(unittest.TestCase):
         length = random.randint(3, 10)
         random_fname = ""
         for i in range(length):
-            letter = passman.generate_random_letter(passman.ALPHABET)
+            letter = ezpass.generate_random_letter(ezpass.ALPHABET)
             random_fname = random_fname + letter
         full_random_fname = random_fname + '.csv'
         return full_random_fname
@@ -74,7 +78,7 @@ class Tests(unittest.TestCase):
         # create a random string of specified length using letters in alphabet
         random_account = ""
         for i in range(length):
-            letter = passman.generate_random_letter(passman.ALPHABET)
+            letter = ezpass.generate_random_letter(ezpass.ALPHABET)
             random_account = random_account + letter
         return random_account
 
@@ -86,7 +90,7 @@ class Tests(unittest.TestCase):
         """
         random_account = self.create_random_account()
         global pwfile
-        account = passman.Account(pwfile, random_account)
+        account = ezpass.Account(pwfile, random_account)
         if account.check_if_org_exists():
             return self.get_non_existing_account(fname)
         else:
@@ -96,22 +100,22 @@ class Tests(unittest.TestCase):
 
     #! TODO: discuss - would it be better to use ALPHABET?
     def test_generate_random_letter(self):
-        letter = passman.generate_random_letter(test_alphabet)
+        letter = ezpass.generate_random_letter(test_alphabet)
         self.assertEqual(len(letter), 1)
         self.assertIn(letter, test_alphabet)
 
     def test_create_password(self):
         alphabet = test_alphabet
-        length = random.randint(1, (2 * len(passman.ALPHABET)))
-        password = passman.create_password(alphabet, length)
+        length = random.randint(1, (2 * len(ezpass.ALPHABET)))
+        password = ezpass.create_password(alphabet, length)
         self.assertEqual(len(password), length)
-        #! TODO - should I check if letter in alphabet (for tests) rather than passman.ALPHABET?
+        #! TODO - should I check if letter in alphabet (for tests) rather than ezpass.ALPHABET?
         for letter in password:
-            self.assertIn(letter, passman.ALPHABET)
+            self.assertIn(letter, ezpass.ALPHABET)
 
     def test_check_if_account_exists_existing_acct(self):
-        pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
-        account = passman.Account(pwfile, 'Twitter')
+        pwfile = ezpass.PwFile(fname, FILE_PASSWORD, True)
+        account = ezpass.Account(pwfile, 'Twitter')
         ret = account.check_if_org_exists()
         self.assertEqual(ret, True)
 
@@ -134,9 +138,9 @@ class Tests(unittest.TestCase):
 
     #! TODO: confirm - do I have to remake pwfile each time?
     def test_create_new_account_existing_acct(self):
-        # pwfile = passman.PwFile(fname, FILE_PASSWORD, True)
+        # pwfile = ezpass.PwFile(fname, FILE_PASSWORD, True)
         global acname
-        account = passman.Account(pwfile, "Gmail")
+        account = ezpass.Account(pwfile, "Gmail")
         try:
             account.create_new_account(acname, test_alphabet, password_length)
             self.fail("Did not raise expected exception")
@@ -214,7 +218,7 @@ class Tests(unittest.TestCase):
         fname = "test_file.csv"
         try:
             # encrypt = True set arbitrarily
-            passman.PwFile.create_new_file(fname, FILE_PASSWORD, True)
+            ezpass.PwFile.create_new_file(fname, FILE_PASSWORD, True)
             self.fail("Did not raise expected error")
         except RuntimeError as err:
             pass
@@ -224,7 +228,7 @@ class Tests(unittest.TestCase):
         ret = os.path.isfile(fname2)
         self.assertEqual(ret, False)
         # encrypt = True is set arbitrarily
-        passman.PwFile.create_new_file(fname2, FILE_PASSWORD, True)
+        ezpass.PwFile.create_new_file(fname2, FILE_PASSWORD, True)
         ret = os.path.isfile(fname2)
         self.assertEqual(ret, True)
         os.remove(fname2)

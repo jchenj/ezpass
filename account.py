@@ -1,7 +1,12 @@
+"""
+Defines Account class to create and manage accounts within a Pwfile instance in ezpass
+"""
+
 import pyperclip
 
 from pwfile import PwFile
 from util import create_password
+
 
 class Account:
     def __init__(self, pwfile: PwFile, org: str) -> None:
