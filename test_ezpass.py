@@ -9,15 +9,15 @@ import pyperclip
 import random
 import os
 
-#! TODO: should these be allcaps?
 fname = "test_file.csv"
 FILE_PASSWORD = "hello"
-#! TODO: would this be better to be a different alphabet than used in program default?
+#! TODO: consider whether it would be better to use a different alphabet from program default?
 test_alphabet = ezpass.ALPHABET
 password_length = 2 * len(ezpass.ALPHABET)
 specified_pass = "myn3wpass"
 pwfile = None
 acname = "some@gmail.com"
+
 
 class Tests(unittest.TestCase):
     @classmethod
@@ -98,7 +98,7 @@ class Tests(unittest.TestCase):
 
     ###############################################################
 
-    #! TODO: discuss - would it be better to use ALPHABET?
+    #! TODO: consider if it would be better to use ALPHABET
     def test_generate_random_letter(self):
         letter = ezpass.generate_random_letter(test_alphabet)
         self.assertEqual(len(letter), 1)
@@ -109,7 +109,7 @@ class Tests(unittest.TestCase):
         length = random.randint(1, (2 * len(ezpass.ALPHABET)))
         password = ezpass.create_password(alphabet, length)
         self.assertEqual(len(password), length)
-        #! TODO - should I check if letter in alphabet (for tests) rather than ezpass.ALPHABET?
+        #! TODO: consider whether to check if letter in alphabet (for tests) rather than ezpass.ALPHABET
         for letter in password:
             self.assertIn(letter, ezpass.ALPHABET)
 
@@ -136,7 +136,6 @@ class Tests(unittest.TestCase):
 
     # not testing get_password_from_file() with print_to_screen option for valid or invalid accounts
 
-    #! TODO: confirm - do I have to remake pwfile each time?
     def test_create_new_account_existing_acct(self):
         # pwfile = ezpass.PwFile(fname, FILE_PASSWORD, True)
         global acname

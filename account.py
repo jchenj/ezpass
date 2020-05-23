@@ -37,11 +37,11 @@ class Account:
 
     @staticmethod
     def _validate_string(s):
-        '''
+        """
         Returns True if the string is a non-empty string with no whitespaces
         :param s: string to validate
         :return: True if s is valid
-        '''
+        """
         if (s is None) or (s == "") or (" " in s) or (s.strip() != s):
             return False
         return True

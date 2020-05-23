@@ -107,7 +107,6 @@ class PwFile:
     def get_fpass(self) -> str:
         return self.fpass
 
-    #! TODO: is it correct to have initial check?
     def change_fpass(self, new_password: str) -> None:
         """
         Changes password for file
@@ -133,7 +132,6 @@ class PwFile:
         """
         # ! TODO: add an option to overwrite file or enter new fname
         # ! TODO: what's best  way to ensure that file is desired format?
-        # ! TODO: Check this func
         if os.path.isfile(fname):
             raise RuntimeError("File '{}' already exists".format(fname))
         fd = os.open(fname, os.O_CREAT)

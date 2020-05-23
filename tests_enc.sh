@@ -14,10 +14,10 @@ yes | python3 ezpass.py -f testfile -na bob -e
 # Get password for account
 yes | python3 ezpass.py -f testfile -g bob -e
 # Change password, specifying password length
-#! TODO: check below - how do I know if it's creating a PW of correct length?
+#! TODO: consider how to determine if prog creating a PW of correct length
 yes | python3 ezpass.py -f testfile -cp bob -l 4 -e
 # Change password with specified password
-#! TODO: check below - how do I know if it's creating correct PW?
+#! TODO: consider how to determine if prog creating correct PW
 yes | python3 ezpass.py -f testfile -cp bob -sp 8080boat -e
 # Get password, printing to screen
 yes | python3 ezpass.py -f testfile -g bob -print -e
