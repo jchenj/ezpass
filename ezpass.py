@@ -115,9 +115,9 @@ def mainfunc():
     # required
     parser.add_argument('-f', '--file', type=str, help='file name', required=True)
     # choose one
-    parser.add_argument('-g', '--get-acpass', type=str, help='org name')
+    parser.add_argument('-g', '--get-acpass', type=str, help='org name to get account password for')
     parser.add_argument('-no', '--new-org', type=str, help='new org name')
-    parser.add_argument('-d', '--delete-account', type=str, help='delete account for specified org')
+    parser.add_argument('-d', '--delete-account', type=str, help='org to delete account for')
     parser.add_argument('-nf', '--new-file', action='store_true', help='whether or not to create new file')
     parser.add_argument('-cp', '--change-acpass', type=str, help='org to change password for')
     parser.add_argument('-sp', '--set-acpass', type=str, help='set specified password', default=None)
