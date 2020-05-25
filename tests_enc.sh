@@ -10,7 +10,7 @@ echo "Running tests..."
 yes | python3 ezpass.py -f testfile -nf -e
 
 # Create new account
-yes | python3 ezpass.py -f testfile -na bob -e
+yes | python3 ezpass.py -f testfile -no bob -e
 # Get password for account
 yes | python3 ezpass.py -f testfile -g bob -e
 # Change password, specifying password length

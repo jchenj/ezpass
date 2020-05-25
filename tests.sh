@@ -9,7 +9,7 @@ echo "Running tests..."
 # Create new file
 python3 ezpass.py -f testfile -nf
 # Create new account
-python3 ezpass.py -f testfile -na bob
+python3 ezpass.py -f testfile -no bob
 # Get password for account
 python3 ezpass.py -f testfile -g bob
 # Change password, specifying password length

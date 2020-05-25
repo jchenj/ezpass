@@ -116,7 +116,7 @@ def mainfunc():
     parser.add_argument('-f', '--file', type=str, help='file name', required=True)
     # choose one
     parser.add_argument('-g', '--get-acpass', type=str, help='org name')
-    parser.add_argument('-na', '--new-account', type=str, help='new org name')
+    parser.add_argument('-no', '--new-org', type=str, help='new org name')
     parser.add_argument('-d', '--delete-account', type=str, help='delete account for specified org')
     parser.add_argument('-nf', '--new-file', action='store_true', help='whether or not to create new file')
     parser.add_argument('-cp', '--change-acpass', type=str, help='org to change password for')
@@ -143,12 +143,12 @@ def mainfunc():
     print(args)
 
     get_acpass_int = int(args.get_acpass is not None)
-    new_account_int = int(args.new_account is not None)
+    new_org_int = int(args.new_org is not None)
     delete_account_int = int(args.delete_account is not None)
     change_acpass_int = int(args.change_acpass is not None)
     new_file_int = int(args.new_file is True)
     interactive_int = int(args.interactive is True)
-    param_sum = get_acpass_int + new_account_int + delete_account_int + change_acpass_int + new_file_int + interactive_int
+    param_sum = get_acpass_int + new_org_int + delete_account_int + change_acpass_int + new_file_int + interactive_int
     if param_sum > 1:
         parser.print_help()
         raise RuntimeError("Error. Can only use one of these flags at a time")
@@ -174,11 +174,11 @@ def mainfunc():
         account.get_password_from_file(args.print_to_screen)
         if args.print_to_screen is False:
             print("Password for account '{}' in paste buffer".format(args.get_acpass))
-    elif args.new_account is not None:
+    elif args.new_org is not None:
         if args.password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
-        account = Account(pfile, args.new_account)
-        print("Creating new account for:", args.new_account)
+        account = Account(pfile, args.new_org)
+        print("Creating new account for:", args.new_org)
         acname = input("Enter username: ")
         account.create_new_account(acname, ALPHABET, args.password_length)
         if args.set_acpass is not None:
