@@ -131,7 +131,7 @@ class Account:
             if account.org == self.org:
                 username = account.acname
                 password = account.acpassword
-                print("Username for org {} is {}".format(self.org, username))
+                print("Username for org '{}' is '{}'".format(self.org, username))
                 if print_to_screen:
                     print("Password for org '{}' is '{}'".format(self.org, password))
                 else:

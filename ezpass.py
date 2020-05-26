@@ -6,6 +6,7 @@ https://github.com/jchenj/ezpass
 import shlex
 import argparse
 import cmd
+import getpass
 import sys
 
 from util import *
@@ -62,7 +63,7 @@ class PassShell(cmd.Cmd):
         acname = input("Enter username: ")
         account.create_new_account(acname, ALPHABET, args.pw_length)
         if args.set_acpass is not None:
-            specified_pass = input("Enter password: ")
+            specified_pass = getpass.getpass(prompt="Enter password: ")
             account.set_acpass(specified_pass)
         print("Account created for:", args.org_name)
 
@@ -184,7 +185,7 @@ def mainfunc():
         acname = input("Enter username: ")
         account.create_new_account(acname, ALPHABET, args.password_length)
         if args.set_acpass is not None:
-            specified_pass = input("Enter password: ")
+            specified_pass = getpass.getpass(prompt="Enter password: ")
             account.set_acpass(specified_pass)
         print("Account created")
     elif args.delete_account is not None:
