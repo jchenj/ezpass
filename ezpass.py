@@ -94,7 +94,7 @@ class PassShell(cmd.Cmd):
         """Change password for specified org: CHACPASS --org-name set-acpass pw-length"""
         parser = argparse.ArgumentParser()
         parser.add_argument('-on', '--org-name', type=str, help='org name')
-        parser.add_argument('-sp', '--set-acpass', type=str, default=None, help='set specified password')
+        parser.add_argument('-sp', '--set-acpass', action='store_true', help='set specified password')
         parser.add_argument('-pl', '--pw-length', type=int, required=False, default=8, help='password length')
         args = parser.parse_args(shlex.split(line))
 
@@ -102,7 +102,8 @@ class PassShell(cmd.Cmd):
         if args.set_acpass is None:
             account.set_acpass_rand(ALPHABET, args.pw_length)
         else:
-            account.set_acpass(args.set_acpass)
+            specified_pass = getpass.getpass(prompt="Enter password: ")
+            account.set_acpass(specified_pass)
         print("Password changed for account:", args.org_name)
 
     def do_quit(self, line):
@@ -197,7 +198,8 @@ def mainfunc():
         if args.set_acpass is None:
             account.set_acpass_rand(ALPHABET, args.password_length)
         else:
-            account.set_acpass(args.set_acpass)
+            specified_pass = getpass.getpass(prompt="Enter password: ")
+            account.set_acpass(specified_pass)
         print("Password changed for account:", args.change_acpass)
     return
 
