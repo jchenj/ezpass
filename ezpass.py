@@ -52,7 +52,7 @@ class PassShell(cmd.Cmd):
         parser = argparse.ArgumentParser()
         parser.add_argument('-on', '--org-name', type=str, help='new org name')
         parser.add_argument('-pl', '--pw-length', type=int, required=False, default=8, help='password length')
-        parser.add_argument('-sp', '--set-acpass', type=str, default=None, help='set specified password')
+        parser.add_argument('-sp', '--set-acpass', action='store_true', help='set specified password')
         args = parser.parse_args(shlex.split(line))
 
         if args.pw_length < 1:
@@ -62,7 +62,8 @@ class PassShell(cmd.Cmd):
         acname = input("Enter username: ")
         account.create_new_account(acname, ALPHABET, args.pw_length)
         if args.set_acpass is not None:
-            account.set_acpass(args.set_acpass)
+            specified_pass = input("Enter password: ")
+            account.set_acpass(specified_pass)
         print("Account created for:", args.org_name)
 
     def do_delac(self, line):
@@ -120,7 +121,8 @@ def mainfunc():
     parser.add_argument('-d', '--delete-account', type=str, help='org to delete account for')
     parser.add_argument('-nf', '--new-file', action='store_true', help='whether or not to create new file')
     parser.add_argument('-cp', '--change-acpass', type=str, help='org to change password for')
-    parser.add_argument('-sp', '--set-acpass', type=str, help='set specified password', default=None)
+    parser.add_argument('-sp', '--set-acpass', action='store_true', help='whether or not to use'
+                                                                         'specified password')
     # optional
     parser.add_argument('-print', '--print-to-screen', action='store_true', help='print password to screen',
                         required=False, default=False)
@@ -182,7 +184,8 @@ def mainfunc():
         acname = input("Enter username: ")
         account.create_new_account(acname, ALPHABET, args.password_length)
         if args.set_acpass is not None:
-            account.set_acpass(args.set_acpass)
+            specified_pass = input("Enter password: ")
+            account.set_acpass(specified_pass)
         print("Account created")
     elif args.delete_account is not None:
         account = Account(pfile, args.delete_account)
