@@ -129,7 +129,7 @@ def mainfunc():
     parser.add_argument('-print', '--print-to-screen', action='store_true', help='print password to screen',
                         required=False, default=False)
     parser.add_argument('-l', '--password-length', type=int, help='password length', required=False, default=8)
-    parser.add_argument('-e', '--encrypt', action='store_true', help='whether or not file is encrypted')
+    parser.add_argument('--no-encrypt', default=False, action='store_true', help='if specified, no encryption will be used')
     parser.add_argument('-a', '--alphabet', type=str, help='full alphabet', required=False)
     parser.add_argument('-i', '--interactive', action='store_true', help='whether or not to use '
                                                                          'interactive mode')
@@ -139,10 +139,10 @@ def mainfunc():
     assert args.file is not None
     fname = args.file
 
-    if args.encrypt:
-        password = input("Enter password for file {}: ".format(fname))
-    else:
+    if args.no_encrypt:
         password = None
+    else:
+        password = getpass.getpass(prompt="Enter password for file {}: ".format(fname))
 
     print(args)
 
@@ -161,12 +161,14 @@ def mainfunc():
         raise RuntimeError("Error. Must use --file and at least one additional flag")
 
     if args.new_file is True:
-        PwFile.create_new_file(fname, password, args.encrypt)
+        # negating no_encrypt to match semantics of 3rd param of create_new_file()
+        PwFile.create_new_file(fname, password, not args.no_encrypt)
         print("New file created:", fname)
         return
 
     # Create PwFile instance based on file name & password
-    pfile = PwFile(fname, password, args.encrypt)
+    # negating no_encrypt to match semantics of 3rd param of PwFile constructor
+    pfile = PwFile(fname, password, not args.no_encrypt)
 
     if args.interactive is True:
         shell = PassShell(pfile)
