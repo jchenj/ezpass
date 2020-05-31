@@ -7,6 +7,7 @@ import shlex
 import argparse
 import cmd
 import getpass
+import os
 import sys
 
 from util import *
@@ -36,7 +37,8 @@ from account import Account
 
 
 class PassShell(cmd.Cmd):
-    intro = 'Welcome to the ezpass interactive shell.   Type "help" or "?" to list commands.\n'
+    intro = 'Welcome to the ezpass interactive shell. Type "help" or "?" to ' \
+            'list commands.\n'
     prompt = '(ezpass) '
     file = None
 
@@ -52,8 +54,10 @@ class PassShell(cmd.Cmd):
         """Add a new org: NEWAC --org-name --pw-length --set-acpass"""
         parser = argparse.ArgumentParser()
         parser.add_argument('-on', '--org-name', type=str, help='new org name')
-        parser.add_argument('-pl', '--pw-length', type=int, required=False, default=8, help='password length')
-        parser.add_argument('-sp', '--set-acpass', action='store_true', help='set specified password')
+        parser.add_argument('-pl', '--pw-length', type=int, required=False,
+                            default=8, help='password length')
+        parser.add_argument('-sp', '--set-acpass', action='store_true',
+                            help='set specified password')
         args = parser.parse_args(shlex.split(line))
 
         if args.pw_length < 1:
@@ -81,8 +85,9 @@ class PassShell(cmd.Cmd):
         """Get password for specified org: GETACPASS --org-name --print"""
         parser = argparse.ArgumentParser()
         parser.add_argument('-on', '--org-name', type=str, help='org name')
-        parser.add_argument('-p', '--print', action='store_true', help='print password to screen',
-                            required=False, default=False)
+        parser.add_argument('-p', '--print', action='store_true',
+                            help='print password to screen', required=False,
+                            default=False)
         args = parser.parse_args(shlex.split(line))
 
         account = Account(self.pfile, args.org_name)
@@ -94,8 +99,10 @@ class PassShell(cmd.Cmd):
         """Change password for specified org: CHACPASS --org-name set-acpass pw-length"""
         parser = argparse.ArgumentParser()
         parser.add_argument('-on', '--org-name', type=str, help='org name')
-        parser.add_argument('-sp', '--set-acpass', action='store_true', help='set specified password')
-        parser.add_argument('-pl', '--pw-length', type=int, required=False, default=8, help='password length')
+        parser.add_argument('-sp', '--set-acpass', action='store_true',
+                            help='set specified password')
+        parser.add_argument('-pl', '--pw-length', type=int, required=False,
+                            default=8, help='password length')
         args = parser.parse_args(shlex.split(line))
 
         account = Account(self.pfile, args.org_name)
@@ -118,21 +125,29 @@ def mainfunc():
     # required
     parser.add_argument('-f', '--file', type=str, help='file name', required=True)
     # choose one
-    parser.add_argument('-g', '--get-acpass', type=str, help='org name to get account password for')
+    parser.add_argument('-g', '--get-acpass', type=str,
+                        help='org name to get account password for')
     parser.add_argument('-no', '--new-org', type=str, help='new org name')
-    parser.add_argument('-d', '--delete-account', type=str, help='org to delete account for')
-    parser.add_argument('-nf', '--new-file', action='store_true', help='whether or not to create new file')
-    parser.add_argument('-cp', '--change-acpass', type=str, help='org to change password for')
-    parser.add_argument('-sp', '--set-acpass', action='store_true', help='whether or not to use'
-                                                                         'specified password')
+    parser.add_argument('-d', '--delete-account', type=str,
+                        help='org to delete account for')
+    parser.add_argument('-nf', '--new-file', action='store_true',
+                        help='whether or not to create new file')
+    parser.add_argument('-cp', '--change-acpass', type=str,
+                        help='org to change password for')
+    parser.add_argument('-sp', '--set-acpass', action='store_true',
+                        help='whether or not to use specified password')
     # optional
-    parser.add_argument('-print', '--print-to-screen', action='store_true', help='print password to screen',
-                        required=False, default=False)
-    parser.add_argument('-l', '--password-length', type=int, help='password length', required=False, default=8)
-    parser.add_argument('--no-encrypt', default=False, action='store_true', help='if specified, no encryption will be used')
-    parser.add_argument('-a', '--alphabet', type=str, help='full alphabet', required=False)
-    parser.add_argument('-i', '--interactive', action='store_true', help='whether or not to use '
-                                                                         'interactive mode')
+    parser.add_argument('-print', '--print-to-screen', action='store_true',
+                        help='print password to screen', required=False,
+                        default=False)
+    parser.add_argument('-l', '--password-length', type=int,
+                        help='password length', required=False, default=8)
+    parser.add_argument('--no-encrypt', default=False, action='store_true',
+                        help='if specified, no encryption will be used')
+    parser.add_argument('-a', '--alphabet', type=str, help='full alphabet',
+                        required=False)
+    parser.add_argument('-i', '--interactive', action='store_true',
+                        help='whether or not to use interactive mode')
 
     args = parser.parse_args()
 
@@ -142,6 +157,9 @@ def mainfunc():
     if args.no_encrypt:
         password = None
     else:
+        # if file encrypted, new file requested & file already exists
+        if args.new_file and os.path.isfile(fname):
+            raise RuntimeError("File '{}' already exists".format(fname))
         password = getpass.getpass(prompt="Enter password for file {}: ".format(fname))
 
     print(args)
@@ -152,13 +170,15 @@ def mainfunc():
     change_acpass_int = int(args.change_acpass is not None)
     new_file_int = int(args.new_file is True)
     interactive_int = int(args.interactive is True)
-    param_sum = get_acpass_int + new_org_int + delete_account_int + change_acpass_int + new_file_int + interactive_int
+    param_sum = get_acpass_int + new_org_int + delete_account_int + \
+                change_acpass_int + new_file_int + interactive_int
     if param_sum > 1:
         parser.print_help()
         raise RuntimeError("Error. Can only use one of these flags at a time")
     if param_sum == 0:
         parser.print_help()
-        raise RuntimeError("Error. Must use --file and at least one additional flag")
+        raise RuntimeError("Error. Must use --file and "
+                           "at least one additional flag")
 
     if args.new_file is True:
         # negating no_encrypt to match semantics of 3rd param of create_new_file()
