@@ -15,9 +15,10 @@ from util import *
 from pwfile import PwFile
 from account import Account
 
-#! TODO - rename class to AcList?
-#! TODO - take acname out of class?
-#! TODO - rename acname to username?
+
+# ! TODO - rename class to AcList?
+# ! TODO - take acname out of class?
+# ! TODO - rename acname to username?
 #
 # class AccountDB:
 #     def __init__(self, pwfile: PwFile) -> None:
@@ -50,7 +51,18 @@ class PassShell(cmd.Cmd):
     # ----- basic ezpass commands -----
     # Must have pwfile before interactive mode can be used
 
-    #! TODO improve docstrsing help for new_account
+    def run_body_handle_exceptions(self, body, parser):
+        try:
+            body()
+        except SystemExit as error:
+            # catching parse_args errors
+            return
+        except:
+            pprint.pprint(sys.exc_info())
+            parser.print_help()
+            return
+
+    # ! TODO improve docstrsing help for new_account
     def do_newac(self, line):
         """Add a new org: NEWAC --org-name --pw-length --set-acpass"""
         parser = argparse.ArgumentParser(prog="newac")
@@ -61,29 +73,36 @@ class PassShell(cmd.Cmd):
                             default=8, help='password length')
         parser.add_argument('-sp', '--set-acpass', action='store_true',
                             help='set specified password', required=False)
-        args = parser.parse_args(shlex.split(line))
 
-        if args.pw_length < 1:
-            raise RuntimeError("Error. Password length must be greater than 0.")
-        account = Account(self.pfile, args.org_name)
-        print("Creating new account for:", args.org_name)
-        acname = input("Enter username: ")
-        account.create_new_account(acname, ALPHABET, args.pw_length)
-        if args.set_acpass is not None:
-            specified_pass = getpass.getpass(prompt="Enter password: ")
-            account.set_acpass(specified_pass)
-        print("Account created for:", args.org_name)
+        def body():
+            args = parser.parse_args(shlex.split(line))
+            if args.pw_length < 1:
+                raise RuntimeError(
+                    "Error. Password length must be greater than 0.")
+            account = Account(self.pfile, args.org_name)
+            print("Creating new account for:", args.org_name)
+            acname = input("Enter username: ")
+            account.create_new_account(acname, ALPHABET, args.pw_length)
+            if args.set_acpass is not None:
+                specified_pass = getpass.getpass(prompt="Enter password: ")
+                account.set_acpass(specified_pass)
+            print("Account created for:", args.org_name)
+
+        self.run_body_handle_exceptions(body, parser)
 
     def do_delac(self, line):
         """Delete account for specified org: DELAC --org-name"""
         parser = argparse.ArgumentParser(prog="delac")
         parser.add_argument('-on', '--org-name', type=str, help='org name',
                             required=True)
-        args = parser.parse_args(shlex.split(line))
 
-        account = Account(self.pfile, args.org_name)
-        account.delete_account()
-        print("Deleted account for:", args.org_name)
+        def body():
+            args = parser.parse_args(shlex.split(line))
+            account = Account(self.pfile, args.org_name)
+            account.delete_account()
+            print("Deleted account for:", args.org_name)
+
+        self.run_body_handle_exceptions(body, parser)
 
     def do_getacpass(self, line):
         """Get password for specified org: GETACPASS --org-name --print"""
@@ -93,19 +112,16 @@ class PassShell(cmd.Cmd):
         parser.add_argument('-p', '--print', action='store_true',
                             help='print password to screen', required=False,
                             default=False)
-        try:
+
+        def body():
             args = parser.parse_args(shlex.split(line))
             account = Account(self.pfile, args.org_name)
             account.get_password_from_file(args.print)
             if args.print is False:
-                print("Password for org {} in paste buffer".format(args.org_name))
-        except SystemExit as error:
-            # catching parse_args errors
-            return
-        except:
-            pprint.pprint(sys.exc_info())
-            parser.print_help()
-            return
+                print(
+                    "Password for org {} in paste buffer".format(args.org_name))
+
+        self.run_body_handle_exceptions(body, parser)
 
     def do_chacpass(self, line):
         """Change password for specified org: CHACPASS --org-name set-acpass pw-length"""
@@ -116,15 +132,18 @@ class PassShell(cmd.Cmd):
                             help='set specified password', required=False)
         parser.add_argument('-pl', '--pw-length', type=int, required=False,
                             default=8, help='password length')
-        args = parser.parse_args(shlex.split(line))
 
-        account = Account(self.pfile, args.org_name)
-        if args.set_acpass is None:
-            account.set_acpass_rand(ALPHABET, args.pw_length)
-        else:
-            specified_pass = getpass.getpass(prompt="Enter password: ")
-            account.set_acpass(specified_pass)
-        print("Password changed for account:", args.org_name)
+        def body():
+            args = parser.parse_args(shlex.split(line))
+            account = Account(self.pfile, args.org_name)
+            if args.set_acpass is None:
+                account.set_acpass_rand(ALPHABET, args.pw_length)
+            else:
+                specified_pass = getpass.getpass(prompt="Enter password: ")
+                account.set_acpass(specified_pass)
+            print("Password changed for account:", args.org_name)
+
+        self.run_body_handle_exceptions(body, parser)
 
     def do_quit(self, line):
         """Quit the program"""
@@ -136,7 +155,8 @@ class PassShell(cmd.Cmd):
 def mainfunc():
     parser = argparse.ArgumentParser(description='Password manager')
     # required
-    parser.add_argument('-f', '--file', type=str, help='file name', required=True)
+    parser.add_argument('-f', '--file', type=str, help='file name',
+                        required=True)
     # choose one
     parser.add_argument('-g', '--get-acpass', type=str,
                         help='org name to get account password for')
@@ -173,7 +193,8 @@ def mainfunc():
         # if file encrypted, new file requested & file already exists
         if args.new_file and os.path.isfile(fname):
             raise RuntimeError("File '{}' already exists".format(fname))
-        password = getpass.getpass(prompt="Enter password for file {}: ".format(fname))
+        password = getpass.getpass(
+            prompt="Enter password for file {}: ".format(fname))
 
     print(args)
 
@@ -212,7 +233,8 @@ def mainfunc():
         account = Account(pfile, args.get_acpass)
         account.get_password_from_file(args.print_to_screen)
         if args.print_to_screen is False:
-            print("Password for account '{}' in paste buffer".format(args.get_acpass))
+            print("Password for account '{}' in paste buffer".format(
+                args.get_acpass))
     elif args.new_org is not None:
         if args.password_length < 1:
             raise RuntimeError("Error. Password length must be greater than 0.")
