@@ -9,10 +9,11 @@ import cmd
 import getpass
 import os
 import sys
+import pprint
 
 from util import *
 from pwfile import PwFile
-from account import Account 
+from account import Account
 
 #! TODO - rename class to AcList?
 #! TODO - take acname out of class?
@@ -83,17 +84,25 @@ class PassShell(cmd.Cmd):
 
     def do_getacpass(self, line):
         """Get password for specified org: GETACPASS --org-name --print"""
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-on', '--org-name', type=str, help='org name')
+        parser = argparse.ArgumentParser(prog='getacpass')
+        parser.add_argument('-on', '--org-name', type=str, help='org name',
+                            required=True)
         parser.add_argument('-p', '--print', action='store_true',
                             help='print password to screen', required=False,
                             default=False)
-        args = parser.parse_args(shlex.split(line))
-
-        account = Account(self.pfile, args.org_name)
-        account.get_password_from_file(args.print)
-        if args.print is False:
-            print("Password for org {} in paste buffer".format(args.org_name))
+        try:
+            args = parser.parse_args(shlex.split(line))
+            account = Account(self.pfile, args.org_name)
+            account.get_password_from_file(args.print)
+            if args.print is False:
+                print("Password for org {} in paste buffer".format(args.org_name))
+        except SystemExit as error:
+            # catching parse_args errors
+            return
+        except:
+            pprint.pprint(sys.exc_info())
+            parser.print_help()
+            return
 
     def do_chacpass(self, line):
         """Change password for specified org: CHACPASS --org-name set-acpass pw-length"""
