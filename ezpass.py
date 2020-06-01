@@ -53,12 +53,14 @@ class PassShell(cmd.Cmd):
     #! TODO improve docstrsing help for new_account
     def do_newac(self, line):
         """Add a new org: NEWAC --org-name --pw-length --set-acpass"""
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-on', '--org-name', type=str, help='new org name')
+        parser = argparse.ArgumentParser(prog="newac")
+        parser.add_argument('-on', '--org-name', type=str, help='new org '
+                                                                'name',
+                            required=True)
         parser.add_argument('-pl', '--pw-length', type=int, required=False,
                             default=8, help='password length')
         parser.add_argument('-sp', '--set-acpass', action='store_true',
-                            help='set specified password')
+                            help='set specified password', required=False)
         args = parser.parse_args(shlex.split(line))
 
         if args.pw_length < 1:
@@ -74,8 +76,9 @@ class PassShell(cmd.Cmd):
 
     def do_delac(self, line):
         """Delete account for specified org: DELAC --org-name"""
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-on', '--org-name', type=str, help='org name')
+        parser = argparse.ArgumentParser(prog="delac")
+        parser.add_argument('-on', '--org-name', type=str, help='org name',
+                            required=True)
         args = parser.parse_args(shlex.split(line))
 
         account = Account(self.pfile, args.org_name)
@@ -106,10 +109,11 @@ class PassShell(cmd.Cmd):
 
     def do_chacpass(self, line):
         """Change password for specified org: CHACPASS --org-name set-acpass pw-length"""
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-on', '--org-name', type=str, help='org name')
+        parser = argparse.ArgumentParser(prog='chacpass')
+        parser.add_argument('-on', '--org-name', type=str, help='org name',
+                            required=True)
         parser.add_argument('-sp', '--set-acpass', action='store_true',
-                            help='set specified password')
+                            help='set specified password', required=False)
         parser.add_argument('-pl', '--pw-length', type=int, required=False,
                             default=8, help='password length')
         args = parser.parse_args(shlex.split(line))
