@@ -184,20 +184,9 @@ def mainfunc():
 
     args = parser.parse_args()
 
-    assert args.file is not None
-    fname = args.file
-
-    if args.no_encrypt:
-        password = None
-    else:
-        # if file encrypted, new file requested & file already exists
-        if args.new_file and os.path.isfile(fname):
-            raise RuntimeError("File '{}' already exists".format(fname))
-        password = getpass.getpass(
-            prompt="Enter password for file {}: ".format(fname))
-
     print(args)
 
+    fname = args.file
     get_acpass_int = int(args.get_acpass is not None)
     new_org_int = int(args.new_org is not None)
     delete_account_int = int(args.delete_account is not None)
@@ -210,9 +199,18 @@ def mainfunc():
         parser.print_help()
         raise RuntimeError("Error. Can only use one of these flags at a time")
     if param_sum == 0:
-        parser.print_help()
-        raise RuntimeError("Error. Must use --file and "
-                           "at least one additional flag")
+        parser.print_usage()
+        raise SystemExit("Error. Must use --file and "
+                         "at least one additional flag")
+
+    if args.no_encrypt:
+        password = None
+    else:
+        # if file encrypted, new file requested & file already exists
+        if args.new_file and os.path.isfile(fname):
+            raise RuntimeError("File '{}' already exists".format(fname))
+        password = getpass.getpass(
+            prompt="Enter password for file {}: ".format(fname))
 
     if args.new_file is True:
         # negating no_encrypt to match semantics of 3rd param of create_new_file()
