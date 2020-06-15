@@ -10,7 +10,6 @@ rm -f testfile
 
 # Create new file
 yes | python3 ezpass.py -f testfile -nf
-
 # Create new account
 yes | python3 ezpass.py -f testfile -no bob
 # Get password for account

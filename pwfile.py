@@ -75,7 +75,7 @@ class PwFile:
 
     def readFile(self) -> list:
         """
-        Opens self.fname and loads data for accounts
+        Opens self.fname and loads data for accounts. If wrong password,
         :return: list of Account instances
         """
         if self.encrypt:

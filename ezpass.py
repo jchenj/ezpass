@@ -11,6 +11,8 @@ import os
 import sys
 import pprint
 
+import cryptography
+
 from util import *
 from pwfile import PwFile
 from account import Account
@@ -117,6 +119,7 @@ class PassShell(cmd.Cmd):
             args = parser.parse_args(shlex.split(line))
             account = Account(self.pfile, args.org_name)
             account.get_password_from_file(args.print)
+
             if args.print is False:
                 print(
                     "Password for org {} in paste buffer".format(args.org_name))
@@ -223,13 +226,25 @@ def mainfunc():
     pfile = PwFile(fname, password, not args.no_encrypt)
 
     if args.interactive is True:
+        #! TODO: try to read file here & request password again if not correct?
+        #! TODO: figure out how to have prog continue instead of exit
+        #! TODO: also, is there better way than trying to read file here?
+        try:
+            pfile.readFile()
+        except cryptography.fernet.InvalidToken as e:
+            print("Error: incorrect file password. Please try again")
+            return
         shell = PassShell(pfile)
         shell.cmdloop()
         return
 
     if args.get_acpass is not None:
         account = Account(pfile, args.get_acpass)
-        account.get_password_from_file(args.print_to_screen)
+        try:
+            account.get_password_from_file(args.print_to_screen)
+        except cryptography.fernet.InvalidToken as e:
+            print("Error: incorrect file password. Please try again")
+            sys.exit(1)
         if args.print_to_screen is False:
             print("Password for account '{}' in paste buffer".format(
                 args.get_acpass))
