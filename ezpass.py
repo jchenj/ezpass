@@ -2,7 +2,7 @@
 Main file for running ezpass. For more instructions, see repo's README:
 https://github.com/jchenj/ezpass
 """
-
+import _pickle
 import shlex
 import argparse
 import cmd
@@ -206,45 +206,48 @@ def mainfunc():
         raise SystemExit("Error. Must use --file and "
                          "at least one additional flag")
 
-    if args.no_encrypt:
-        password = None
-    else:
+    if args.new_file:
         # if file encrypted, new file requested & file already exists
-        if args.new_file and os.path.isfile(fname):
+        if os.path.isfile(fname):
             raise RuntimeError("File '{}' already exists".format(fname))
-        password = getpass.getpass(
+        if args.no_encrypt:
+            password = None
+        else:
+            password = getpass.getpass(
             prompt="Enter password for file {}: ".format(fname))
-
-    if args.new_file is True:
         # negating no_encrypt to match semantics of 3rd param of create_new_file()
         PwFile.create_new_file(fname, password, not args.no_encrypt)
         print("New file created:", fname)
         return
 
-    # Create PwFile instance based on file name & password
-    # negating no_encrypt to match semantics of 3rd param of PwFile constructor
-    pfile = PwFile(fname, password, not args.no_encrypt)
+    if args.no_encrypt:
+        password = None
+        try:
+            pfile = PwFile(fname, password, not args.no_encrypt)
+        except _pickle.UnpicklingError as e:
+            print("Error: could not open file. Are you sure this file is not "
+                  "encrypted?")
+            sys.exit(1)
+    else:
+        while True:
+            password = getpass.getpass(
+                prompt="Enter password for file {}: ".format(fname))
+            # Create PwFile instance based on file name & password
+            # negating no_encrypt to match semantics of 3rd param of PwFile constructor
+            try:
+                pfile = PwFile(fname, password, not args.no_encrypt)
+                break
+            except cryptography.fernet.InvalidToken as e:
+                print("Error: incorrect file password. Please try again")
 
     if args.interactive is True:
-        #! TODO: try to read file here & request password again if not correct?
-        #! TODO: figure out how to have prog continue instead of exit
-        #! TODO: also, is there better way than trying to read file here?
-        try:
-            pfile.readFile()
-        except cryptography.fernet.InvalidToken as e:
-            print("Error: incorrect file password. Please try again")
-            return
         shell = PassShell(pfile)
         shell.cmdloop()
         return
 
     if args.get_acpass is not None:
         account = Account(pfile, args.get_acpass)
-        try:
-            account.get_password_from_file(args.print_to_screen)
-        except cryptography.fernet.InvalidToken as e:
-            print("Error: incorrect file password. Please try again")
-            sys.exit(1)
+        account.get_password_from_file(args.print_to_screen)
         if args.print_to_screen is False:
             print("Password for account '{}' in paste buffer".format(
                 args.get_acpass))

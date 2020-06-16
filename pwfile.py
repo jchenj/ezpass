@@ -28,11 +28,16 @@ class PwFile:
         self.fname = fname
         self.fpass = fpass
         self.encrypt = encrypt
+        # try to read file w/o storing output. If fails (e.g. wrong
+        # password or no password), will raise exception that must be handled
+        # by caller (Could store output here & refactor)
+        self.readFile()
 
-    def _encryptFile(self, data: list) -> None:
+    @staticmethod
+    def _encryptFile(fname, fpass, data: list) -> None:
         # Pickle data (list of Account instances)
         pickledData = pickle.dumps(data)
-        encodedPassword = self.fpass.encode()
+        encodedPassword = fpass.encode()
 
         # salt = os.urandom(16)
         salt = b"1\xf6I\xf3\xce\xd4\x02^\x94\xbe\xb0\xe4\x8bO\x04\x1d"
@@ -47,7 +52,7 @@ class PwFile:
         f = Fernet(key)
         cipher_text = f.encrypt(pickledData)
 
-        with open(self.fname, "wb") as enc_file:
+        with open(fname, "wb") as enc_file:
             enc_file.write(cipher_text)
         return
 
@@ -95,7 +100,7 @@ class PwFile:
         :side effect: updated file
         """
         if self.encrypt:
-            self._encryptFile(data)
+            PwFile._encryptFile(self.fname, self.fpass, data)
         else:
             with open(self.fname, 'wb') as file:
                 pickle.dump(data, file)
@@ -136,7 +141,17 @@ class PwFile:
             raise RuntimeError("File '{}' already exists".format(fname))
         fd = os.open(fname, os.O_CREAT)
         os.close(fd)
+
+        if encrypt:
+            PwFile._encryptFile(fname, fpass, [])
+        else:
+            with open(fname, 'wb') as file:
+                pickle.dump([], file)
+
         new_file = PwFile(fname, fpass, encrypt)
-        new_file.writeFile([])
         return new_file
+
+
+
+
 

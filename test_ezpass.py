@@ -1,6 +1,9 @@
 """
 Unit tests for ezpass.py and related modules
 """
+import _pickle
+
+import cryptography
 
 import ezpass
 
@@ -119,6 +122,21 @@ class Tests(unittest.TestCase):
         ret = account.check_if_org_exists()
         self.assertEqual(ret, True)
 
+    def test_open_file_wrong_pw(self):
+        try:
+            ezpass.PwFile(fname, FILE_PASSWORD + '1', True)
+            self.fail("Did not raise expected exception")
+        except cryptography.fernet.InvalidToken as e:
+            pass
+
+    def test_open_file_no_pw(self):
+        try:
+            ezpass.PwFile(fname, None, False)
+            self.fail("Did not raise expected exception")
+        except _pickle.UnpicklingError as e:
+            pass
+
+
     def test_check_if_account_exists_non_existing_acct(self):
         account = self.get_non_existing_account(fname)
         ret = account.check_if_org_exists()
@@ -231,6 +249,8 @@ class Tests(unittest.TestCase):
         ret = os.path.isfile(fname2)
         self.assertEqual(ret, True)
         os.remove(fname2)
+
+
 
 
 if __name__ == '__main__':
