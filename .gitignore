@@ -1,4 +1,4 @@
 .env/
 .idea/
 __pycache__/
-*testfile
+*testfile*

@@ -239,6 +239,10 @@ def mainfunc():
                 break
             except cryptography.fernet.InvalidToken as e:
                 print("Error: incorrect file password. Please try again")
+            except UnicodeDecodeError as e:
+                print("Error: Couldn't open file. Try running with "
+                      "--no-encrypt")
+                sys.exit(1)
 
     if args.interactive is True:
         shell = PassShell(pfile)
