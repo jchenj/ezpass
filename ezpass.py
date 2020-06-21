@@ -57,6 +57,12 @@ class PassShell(cmd.Cmd):
 
     def __init__(self, pfile):
         cmd.Cmd.__init__(self, 'tab', sys.stdin, sys.stdout)
+        self.doc_header = """[n -o org] Add new account
+[d -o org] Delete account
+[g -o org] Get password
+[ch -o org -p pass] Change password
+[q] Quit
+"""
         self.pfile = pfile
 
     # ----- basic ezpass commands -----
@@ -73,16 +79,15 @@ class PassShell(cmd.Cmd):
             parser.print_help()
             return
 
-    # ! TODO improve docstrsing help for new_account
-    def do_newac(self, line):
-        """Add a new org: NEWAC --org-name --pw-length --set-acpass"""
+    def do_n(self, line):
+        """[n -o org] Add a new org: NEWAC --org-name --pw-length --set-acpass"""
         parser = argparse.ArgumentParser(prog="newac")
-        parser.add_argument('-on', '--org-name', type=str, help='new org '
+        parser.add_argument('-o', '--org-name', type=str, help='new org '
                                                                 'name',
                             required=True)
-        parser.add_argument('-pl', '--pw-length', type=int, required=False,
+        parser.add_argument('-l', '--pw-length', type=int, required=False,
                             default=8, help='password length')
-        parser.add_argument('-sp', '--set-acpass', action='store_true',
+        parser.add_argument('-p', '--set-acpass', action='store_true',
                             help='set specified password', required=False)
 
         def body():
@@ -101,10 +106,10 @@ class PassShell(cmd.Cmd):
 
         self.run_body_handle_exceptions(body, parser)
 
-    def do_delac(self, line):
-        """Delete account for specified org: DELAC --org-name"""
+    def do_d(self, line):
+        """[d -o org] Delete account for specified org: DELAC --org-name"""
         parser = argparse.ArgumentParser(prog="delac")
-        parser.add_argument('-on', '--org-name', type=str, help='org name',
+        parser.add_argument('-o', '--org-name', type=str, help='org name',
                             required=True)
 
         def body():
@@ -115,12 +120,12 @@ class PassShell(cmd.Cmd):
 
         self.run_body_handle_exceptions(body, parser)
 
-    def do_getacpass(self, line):
-        """Get password for specified org: GETACPASS --org-name --print"""
+    def do_g(self, line):
+        """[g -o org] Get password for specified org: GETACPASS --org-name --print"""
         parser = argparse.ArgumentParser(prog='getacpass')
-        parser.add_argument('-on', '--org-name', type=str, help='org name',
+        parser.add_argument('-o', '--org-name', type=str, help='org name',
                             required=True)
-        parser.add_argument('-p', '--print', action='store_true',
+        parser.add_argument('--print', action='store_true',
                             help='print password to screen', required=False,
                             default=False)
 
@@ -135,14 +140,14 @@ class PassShell(cmd.Cmd):
 
         self.run_body_handle_exceptions(body, parser)
 
-    def do_chacpass(self, line):
-        """Change password for specified org: CHACPASS --org-name set-acpass pw-length"""
+    def do_ch(self, line):
+        """[ch -o org -p pass] Change password for specified org: CHACPASS --org-name set-acpass pw-length"""
         parser = argparse.ArgumentParser(prog='chacpass')
-        parser.add_argument('-on', '--org-name', type=str, help='org name',
+        parser.add_argument('-o', '--org-name', type=str, help='org name',
                             required=True)
-        parser.add_argument('-sp', '--set-acpass', action='store_true',
+        parser.add_argument('-p', '--set-acpass', action='store_true',
                             help='set specified password', required=False)
-        parser.add_argument('-pl', '--pw-length', type=int, required=False,
+        parser.add_argument('-l', '--pw-length', type=int, required=False,
                             default=8, help='password length')
 
         def body():
@@ -157,8 +162,8 @@ class PassShell(cmd.Cmd):
 
         self.run_body_handle_exceptions(body, parser)
 
-    def do_quit(self, line):
-        """Quit the program"""
+    def do_q(self, line):
+        """[q] Quit the program"""
         print("")
         print("Goodbye!")
         sys.exit(0)
