@@ -52,9 +52,14 @@ optional arguments:
 
 ## Interactive mode usage
 ````
-Documented commands (type help <topic>):
-========================================
-chacpass  delac  getacpass  help  newac  quit
+Welcome to the ezpass interactive shell. Type "help" or "?" to list commands.
 
-(ezpass) 
+(ezpass) help
+
+[n -o org] Add new account
+[d -o org] Delete account
+[g -o org] Get password
+[ch -o org -p pass] Change password
+[q] Quit
+
 ````
