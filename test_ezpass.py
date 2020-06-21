@@ -136,6 +136,8 @@ class Tests(unittest.TestCase):
         except _pickle.UnpicklingError as e:
             pass
 
+    # testfile is encrypted, so not testing case if user attempts to opne
+    # unencrypted file as encryptd
 
     def test_check_if_account_exists_non_existing_acct(self):
         account = self.get_non_existing_account(fname)
