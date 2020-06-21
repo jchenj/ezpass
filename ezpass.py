@@ -10,8 +10,17 @@ import getpass
 import os
 import sys
 import pprint
-
 import cryptography
+
+#########################################
+# Enable tab-completion for cmd.cmd
+# https://pewpewthespells.com/blog/osx_readline.html
+import readline
+if 'libedit' in readline.__doc__:
+    readline.parse_and_bind("bind ^I rl_complete")
+else:
+    readline.parse_and_bind("tab: complete")
+#########################################
 
 from util import *
 from pwfile import PwFile
